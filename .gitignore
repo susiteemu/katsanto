@@ -1,0 +1,10 @@
+/target
+/data
+*.db
+*.db-shm
+*.db-wal
+rustypipe_cache.json
+node_modules
+/web/build
+/web/.svelte-kit
+.env
