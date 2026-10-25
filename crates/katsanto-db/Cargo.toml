@@ -2,6 +2,8 @@
 name = "katsanto-db"
 edition.workspace = true
 license.workspace = true
+authors.workspace = true
+repository.workspace = true
 version.workspace = true
 
 [dependencies]

@@ -29,7 +29,7 @@ as a container image. Both include the web app; the server also needs
 (without them YouTube stops serving a stream after a few megabytes).
 
 ```sh
-git clone <repository-url> katsanto
+git clone https://github.com/susiteemu/katsanto.git
 cd katsanto
 ```
 
@@ -197,6 +197,6 @@ media proxy, SponsorBlock/DeArrow, WebSub, embedded web app), `web/` (SvelteKit 
 
 ## License
 
-[AGPL-3.0-only](LICENSE). Vendored ejs solver: Unlicense (bundled meriyah: ISC, astring: MIT).
+Copyright (C) 2026 Teemu Turunen. [AGPL-3.0-only](LICENSE). Vendored ejs solver: Unlicense (bundled meriyah: ISC, astring: MIT).
 Katsanto is not affiliated with YouTube or Google. SponsorBlock and DeArrow data come from the
 SponsorBlock community under CC BY-NC-SA 4.0.

@@ -2,6 +2,8 @@
 	"name": "katsanto-web",
 	"private": true,
 	"version": "0.0.1",
+	"author": "Teemu Turunen",
+	"repository": "github:susiteemu/katsanto",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
