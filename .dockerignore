@@ -1,0 +1,8 @@
+target
+data
+**/node_modules
+web/build
+web/.svelte-kit
+*.db*
+katsanto.toml
+.git

@@ -1,0 +1,136 @@
+@import 'tailwindcss';
+
+/*
+ * Design tokens. Every color, radius and spacing decision in the UI goes through
+ * these variables, so a theme is just a different set of values. The theme editor
+ * (M6) will write the same variables.
+ */
+:root {
+	--accent-hue: 195;
+	--radius: 0.75rem;
+	--k-font: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+	/* light */
+	--bg: oklch(0.985 0.002 260);
+	--surface: oklch(1 0 0);
+	--surface-2: oklch(0.96 0.004 260);
+	--border: oklch(0.9 0.006 260);
+	--fg: oklch(0.22 0.01 260);
+	--muted: oklch(0.52 0.012 260);
+	/* Light enough to be vivid, dark enough for 4.5:1 with white text and on --surface-2. */
+	--accent: oklch(0.52 0.2 var(--accent-hue));
+	--accent-fg: oklch(0.99 0 0);
+	--danger: oklch(0.58 0.21 25);
+	--danger-fg: oklch(1 0 0);
+	--success: oklch(0.6 0.15 150);
+	--warning: oklch(0.72 0.15 75);
+	--shadow: 0 1px 2px oklch(0 0 0 / 0.06), 0 4px 16px oklch(0 0 0 / 0.06);
+	color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme]) {
+		--bg: oklch(0.17 0.006 260);
+		--surface: oklch(0.21 0.008 260);
+		--surface-2: oklch(0.25 0.01 260);
+		--border: oklch(0.31 0.012 260);
+		--fg: oklch(0.94 0.004 260);
+		--muted: oklch(0.68 0.012 260);
+		--accent: oklch(0.68 0.19 var(--accent-hue));
+		--accent-fg: oklch(0.15 0 0);
+		--shadow: 0 1px 2px oklch(0 0 0 / 0.4);
+		--danger: oklch(0.7 0.19 25);
+		--danger-fg: oklch(0.15 0 0);
+		color-scheme: dark;
+	}
+}
+
+:root[data-theme='dark'] {
+	--bg: oklch(0.17 0.006 260);
+	--surface: oklch(0.21 0.008 260);
+	--surface-2: oklch(0.25 0.01 260);
+	--border: oklch(0.31 0.012 260);
+	--fg: oklch(0.94 0.004 260);
+	--muted: oklch(0.68 0.012 260);
+	--accent: oklch(0.68 0.19 var(--accent-hue));
+	--accent-fg: oklch(0.15 0 0);
+	--shadow: 0 1px 2px oklch(0 0 0 / 0.4);
+	--danger: oklch(0.7 0.19 25);
+	--danger-fg: oklch(0.15 0 0);
+	color-scheme: dark;
+}
+
+/* AMOLED: true black backgrounds */
+:root[data-theme='black'] {
+	--bg: oklch(0 0 0);
+	--surface: oklch(0.13 0 0);
+	--surface-2: oklch(0.18 0 0);
+	--border: oklch(0.26 0 0);
+	--fg: oklch(0.95 0 0);
+	--muted: oklch(0.66 0 0);
+	--accent: oklch(0.68 0.19 var(--accent-hue));
+	--accent-fg: oklch(0.1 0 0);
+	--shadow: none;
+	--danger: oklch(0.7 0.19 25);
+	--danger-fg: oklch(0.15 0 0);
+	color-scheme: dark;
+}
+
+:root[data-theme='contrast'] {
+	--bg: oklch(1 0 0);
+	--surface: oklch(1 0 0);
+	--surface-2: oklch(0.94 0 0);
+	--border: oklch(0.2 0 0);
+	--fg: oklch(0 0 0);
+	--muted: oklch(0.3 0 0);
+	--accent: oklch(0.45 0.22 var(--accent-hue));
+	--accent-fg: oklch(1 0 0);
+	--shadow: none;
+	color-scheme: light;
+}
+
+/* Expose the tokens as Tailwind utilities: bg-surface, text-muted, border-border, … */
+@theme inline {
+	--color-bg: var(--bg);
+	--color-surface: var(--surface);
+	--color-surface-2: var(--surface-2);
+	--color-border: var(--border);
+	--color-fg: var(--fg);
+	--color-muted: var(--muted);
+	--color-accent: var(--accent);
+	--color-accent-fg: var(--accent-fg);
+	--color-danger: var(--danger);
+	--color-danger-fg: var(--danger-fg);
+	--color-success: var(--success);
+	--color-warning: var(--warning);
+	--radius-card: var(--radius);
+	--font-sans: var(--k-font);
+	--shadow-card: var(--shadow);
+}
+
+html {
+	/* Density: everything sized in rem scales with the root font size. */
+	font-size: var(--base-size, 16px);
+}
+
+html,
+body {
+	background: var(--bg);
+	color: var(--fg);
+	font-family: var(--k-font);
+	-webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		transition-duration: 0.01ms !important;
+		animation-duration: 0.01ms !important;
+	}
+}

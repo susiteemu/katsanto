@@ -1,0 +1,52 @@
+[package]
+name = "katsanto-server"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+argon2 = "0.5"
+axum = "0.8.9"
+axum-extra = { version = "0.12.6", features = ["cookie"] }
+base64 = "0.23.1"
+figment = { version = "0.10.19", features = ["toml", "env"] }
+futures-util = "0.3.34"
+hmac = "0.13.0"
+katsanto-db = { version = "0.1.0", path = "../katsanto-db" }
+katsanto-yt = { version = "0.1.0", path = "../katsanto-yt", features = ["openapi"] }
+mime_guess = "2.0.5"
+moka = { version = "0.12.16", features = ["future"] }
+openssl = { version = "0.10.81", features = ["vendored"] }
+rand = "0.9"
+regex = "1.13.1"
+reqwest = { version = "0.12", default-features = false, features = ["stream", "rustls-tls-native-roots", "http2"] }
+rust-embed = "8.13.0"
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+sha1 = "0.11.0"
+sha2 = "0.11.1"
+thiserror = "2.0.21"
+time = "0.3.55"
+tokio = { version = "1.54.1", features = ["full"] }
+tokio-stream = { version = "0.1.19", features = ["sync"] }
+tower-http = { version = "0.7.1", features = ["trace", "compression-gzip", "compression-br"] }
+tower_governor = "0.8.0"
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+url = "2.5.8"
+utoipa = { version = "6.0.0", features = ["axum_extras"] }
+utoipa-axum = "0.3.0"
+uuid = { version = "1.29.0", features = ["v4"] }
+webauthn-rs = { version = "0.5", features = ["conditional-ui", "danger-allow-state-serialisation"] }
+
+[dev-dependencies]
+async-trait = "0.1.92"
+figment = { version = "0.10.19", features = ["test"] }
+http-body-util = "0.1.5"
+serde_json = "1.0.154"
+sqlx = { version = "0.8", default-features = false, features = ["sqlite", "runtime-tokio"] }
+time = "0.3.55"
+tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread"] }
+tower = { version = "0.5.3", features = ["util"] }
+url = "2.5.8"
+webauthn-authenticator-rs = { version = "0.5", features = ["softpasskey"] }

@@ -1,0 +1,37 @@
+# Copy to katsanto.toml (or point KATSANTO_CONFIG at it). Every key can also be
+# set as an environment variable: KATSANTO_PUBLIC_URL, KATSANTO_BIND, …
+
+# Address the server listens on.
+bind = "127.0.0.1:3000"
+
+# The URL people open Katsanto at. Passkeys need https:// with a domain name
+# (or http://localhost for development); otherwise Katsanto uses passwords only.
+public_url = "https://katsanto.example.com"
+
+# Database, caches and the botguard snapshot.
+data_dir = "data"
+
+# rustypipe-botguard for YouTube PO tokens. Defaults to
+# <data_dir>/tools/bin/rustypipe-botguard, then rustypipe-botguard from PATH.
+# botguard_bin = "/usr/local/bin/rustypipe-botguard"
+
+# Stream video through the server (hides viewers' IPs; googlevideo URLs are
+# bound to the server's IP anyway).
+proxy_video = true
+
+# SponsorBlock (and DeArrow titles) API, queried by the server with a partial
+# hash of the video id. Set to "" to turn both off.
+# sponsorblock_api = "https://sponsor.ajay.app"
+
+# DeArrow thumbnail service; "" turns DeArrow thumbnails off.
+# dearrow_thumbnails = "https://dearrow-thumb.ajay.app"
+
+# Push notifications for new uploads from YouTube's WebSub hub. Only works when
+# public_url is reachable from the internet; RSS polling continues as a fallback.
+# websub = false
+# websub_hub = "https://pubsubhubbub.appspot.com/subscribe"
+
+# Reverse proxies whose X-Forwarded-For header tells the client's address, so login
+# attempts are rate-limited per client. Without this, everyone behind the proxy shares
+# one limit. Only list proxies you run: anyone else could fake the header.
+# trusted_proxies = ["127.0.0.1"]

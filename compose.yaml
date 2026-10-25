@@ -1,0 +1,35 @@
+# Katsanto behind Caddy, which gets a TLS certificate automatically (passkeys need
+# HTTPS with a domain name). Point your domain's DNS at this host, set it below, then:
+#   docker compose up -d --build
+# (builds the Katsanto image from this checkout; rebuild after `git pull` to update)
+# The first account you create is the admin.
+
+services:
+  katsanto:
+    build: .
+    image: katsanto
+    restart: unless-stopped
+    environment:
+      KATSANTO_PUBLIC_URL: https://tv.example.com
+      # Caddy's address on the compose network, for per-client login rate limits. Katsanto
+      # publishes no ports, so only containers on this network can reach it.
+      KATSANTO_TRUSTED_PROXIES: '["10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16"]'
+      # Push notifications for new uploads (the hub must reach the URL above):
+      # KATSANTO_WEBSUB: "true"
+    volumes:
+      - katsanto-data:/data
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    command: caddy reverse-proxy --from tv.example.com --to katsanto:3000
+    volumes:
+      - caddy-data:/data
+
+volumes:
+  katsanto-data:
+  caddy-data:

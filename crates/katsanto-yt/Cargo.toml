@@ -1,0 +1,29 @@
+[package]
+name = "katsanto-yt"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait = "0.1.92"
+base64 = "0.23.1"
+quick-xml = "0.37"
+regex = "1.13.1"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls-native-roots", "http2"] }
+rquickjs = "0.9"
+rustypipe = { version = "0.11.4", default-features = false, features = ["rss", "rustls-tls-native-roots"] }
+serde = { version = "1.0.229", features = ["derive"] }
+serde_json = "1.0.154"
+thiserror = "2.0.21"
+time = { version = "0.3.55", features = ["parsing", "formatting"] }
+tokio = { version = "1.54.1", features = ["sync", "rt", "process", "macros"] }
+tracing = "0.1.44"
+url = "2.5.8"
+utoipa = { version = "6.0.0", optional = true }
+
+[dev-dependencies]
+tokio = { version = "1.54.1", features = ["macros", "rt-multi-thread"] }
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+
+[features]
+openapi = ["dep:utoipa"]

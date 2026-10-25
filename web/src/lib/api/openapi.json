@@ -1,0 +1,5418 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Katsanto API",
+    "description": "Katsanto's REST API, used by its web app.",
+    "license": {
+      "name": "AGPL-3.0-only",
+      "identifier": "AGPL-3.0-only"
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/v1/admin/invites": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "operationId": "list_invites",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InviteInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "operationId": "create_invite",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateInvite"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedInvite"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/invites/{id}": {
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "operationId": "delete_invite",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/settings": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "operationId": "get_instance_settings",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSettings"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "operationId": "update_instance_settings",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSettings"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminSettings"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users": {
+      "get": {
+        "tags": [
+          "admin"
+        ],
+        "operationId": "list_users",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Create an account without credentials and return a setup link for it.",
+        "operationId": "create_user",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUser"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedUser"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users/{id}": {
+      "delete": {
+        "tags": [
+          "admin"
+        ],
+        "operationId": "delete_user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "admin"
+        ],
+        "operationId": "update_user",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateUser"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {},
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/users/{id}/reset-link": {
+      "post": {
+        "tags": [
+          "admin"
+        ],
+        "summary": "Single-use link (24 h) letting the user add a new passkey or set a password.\nEarlier unused links for the user stop working.",
+        "operationId": "create_reset_link",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatedLink"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/config": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Public: what the login/registration pages should offer.",
+        "operationId": "config",
+        "parameters": [
+          {
+            "name": "invite",
+            "in": "query",
+            "description": "Invite token from an invite link, to check its validity.",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthConfig"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login/passkey/finish": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "login_passkey_finish",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResult"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login/passkey/start": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "Username-less passkey login; the options also work for the browser's passkey autofill.",
+        "operationId": "login_passkey_start",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Challenge"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login/password": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "login_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResult"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login/recovery": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "login_recovery",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecoveryLogin"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResult"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "logout",
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/api/v1/auth/reauth/passkey/finish": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "reauth_passkey_finish",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {},
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reauth/passkey/start": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "reauth_passkey_start",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Challenge"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reauth/password": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "reauth_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordReauth"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {},
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register/passkey/finish": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "register_passkey_finish",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignupResult"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register/passkey/start": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "register_passkey_start",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterStart"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Challenge"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register/password": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "register_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterPassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignupResult"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reset/{token}": {
+      "get": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "reset_info",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResetInfo"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reset/{token}/passkey/finish": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "reset_passkey_finish",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignupResult"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reset/{token}/passkey/start": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "reset_passkey_start",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Challenge"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/reset/{token}/password": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "operationId": "reset_password",
+        "parameters": [
+          {
+            "name": "token",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewPassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SignupResult"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/branding": {
+      "post": {
+        "tags": [
+          "community"
+        ],
+        "operationId": "branding",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BrandingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/components/schemas/VideoBranding"
+                  },
+                  "propertyNames": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/channels/{id}": {
+      "get": {
+        "tags": [
+          "youtube"
+        ],
+        "summary": "Channel info and the first page of a tab.",
+        "operationId": "channel",
+        "parameters": [
+          {
+            "name": "tab",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "videos",
+                "shorts",
+                "live"
+              ]
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChannelPage"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/channels/{id}/videos": {
+      "get": {
+        "tags": [
+          "youtube"
+        ],
+        "summary": "More videos of a channel tab.",
+        "operationId": "channel_videos",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoPage"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/continue-watching": {
+      "get": {
+        "tags": [
+          "watch"
+        ],
+        "summary": "Started but unfinished videos, most recent first.",
+        "operationId": "continue_watching",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Default 12, at most 50.",
+            "required": false,
+            "schema": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ContinueItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/events": {
+      "get": {
+        "tags": [
+          "subscriptions"
+        ],
+        "summary": "Server-sent events. `feed` events announce new uploads from subscribed\nchannels: `{\"channel_id\": \"UC…\", \"count\": 2}`.",
+        "operationId": "events",
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/features": {
+      "get": {
+        "tags": [
+          "community"
+        ],
+        "operationId": "features",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Features"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/feed": {
+      "get": {
+        "tags": [
+          "subscriptions"
+        ],
+        "summary": "Videos from subscribed channels, newest first.",
+        "operationId": "get_feed",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "From a previous page.",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          {
+            "name": "shorts",
+            "in": "query",
+            "description": "Include Shorts (default false).",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "watched",
+            "in": "query",
+            "description": "Include finished videos (default true).",
+            "required": false,
+            "schema": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedPage"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/feeds": {
+      "get": {
+        "tags": [
+          "feeds"
+        ],
+        "operationId": "list_feeds",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FeedInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "feeds"
+        ],
+        "operationId": "create_feed",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedInfo"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/feeds/order": {
+      "put": {
+        "tags": [
+          "feeds"
+        ],
+        "operationId": "reorder_feeds",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedOrder"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/api/v1/feeds/preview": {
+      "post": {
+        "tags": [
+          "feeds"
+        ],
+        "summary": "Videos an unsaved filter would show (feed editor preview, quick filters).",
+        "operationId": "preview",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Preview"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedPage"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/feeds/{id}": {
+      "put": {
+        "tags": [
+          "feeds"
+        ],
+        "operationId": "update_feed",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedInfo"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "feeds"
+        ],
+        "operationId": "delete_feed",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/feeds/{id}/videos": {
+      "get": {
+        "tags": [
+          "feeds"
+        ],
+        "operationId": "feed_videos",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedPage"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lists": {
+      "get": {
+        "tags": [
+          "lists"
+        ],
+        "summary": "The user's lists, Watch later first (created on first use).",
+        "operationId": "list_lists",
+        "parameters": [
+          {
+            "name": "contains",
+            "in": "query",
+            "description": "A video id: each list then says whether it contains the video.",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ListInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "lists"
+        ],
+        "operationId": "create_list",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListInfo"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lists/{id}": {
+      "get": {
+        "tags": [
+          "lists"
+        ],
+        "operationId": "get_list",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListDetail"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "lists"
+        ],
+        "operationId": "update_list",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ListBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListInfo"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "lists"
+        ],
+        "summary": "Delete a list. Watch later can't be deleted, only emptied.",
+        "operationId": "delete_list",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lists/{id}/items": {
+      "post": {
+        "tags": [
+          "lists"
+        ],
+        "summary": "Add a video to the end of a list.",
+        "operationId": "add_item",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddItem"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Added"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lists/{id}/items/{video_id}": {
+      "delete": {
+        "tags": [
+          "lists"
+        ],
+        "operationId": "remove_item",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "video_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/lists/{id}/items/{video_id}/position": {
+      "put": {
+        "tags": [
+          "lists"
+        ],
+        "operationId": "move_item",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          {
+            "name": "video_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MoveItem"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {},
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "me",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "delete_account",
+        "responses": {
+          "204": {},
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/backup": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "export_backup",
+        "responses": {
+          "200": {
+            "description": "The user's Katsanto data as a JSON file",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "import_backup",
+        "requestBody": {
+          "description": "A file from `GET /me/backup`",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportResult"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/passkeys": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "list_passkeys",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PasskeyInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/passkeys/finish": {
+      "post": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "add_passkey_finish",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CredentialBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PasskeyInfo"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/passkeys/start": {
+      "post": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "add_passkey_start",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Challenge"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/passkeys/{id}": {
+      "delete": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "delete_passkey",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "rename_passkey",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Rename"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {},
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/password": {
+      "put": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "set_password",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/NewPassword"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {},
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "remove_password",
+        "responses": {
+          "204": {},
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/recovery-codes": {
+      "post": {
+        "tags": [
+          "me"
+        ],
+        "summary": "Replace all recovery codes; the old ones stop working.",
+        "operationId": "regenerate_recovery_codes",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryCodes"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/sessions": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "list_sessions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SessionInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "me"
+        ],
+        "summary": "Sign out everywhere except here.",
+        "operationId": "sign_out_others",
+        "responses": {
+          "204": {}
+        }
+      }
+    },
+    "/api/v1/me/sessions/{id}": {
+      "delete": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "revoke_session",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/settings": {
+      "put": {
+        "tags": [
+          "me"
+        ],
+        "operationId": "update_my_settings",
+        "requestBody": {
+          "description": "Replaces all settings",
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Me"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/progress": {
+      "get": {
+        "tags": [
+          "watch"
+        ],
+        "summary": "Progress for the given videos (for progress bars on cards). Unwatched videos are omitted.",
+        "operationId": "get_progress",
+        "parameters": [
+          {
+            "name": "ids",
+            "in": "query",
+            "description": "Comma-separated video ids (at most 100).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProgressInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/progress/{video_id}": {
+      "put": {
+        "tags": [
+          "watch"
+        ],
+        "summary": "Save the playback position. Sent periodically while playing and when leaving the page.",
+        "operationId": "save_progress",
+        "parameters": [
+          {
+            "name": "video_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveProgress"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressInfo"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "watch"
+        ],
+        "summary": "Forget the progress (e.g. remove from \"continue watching\").",
+        "operationId": "delete_progress",
+        "parameters": [
+          {
+            "name": "video_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/resolve": {
+      "get": {
+        "tags": [
+          "youtube"
+        ],
+        "summary": "What a pasted YouTube link points to.",
+        "operationId": "resolve",
+        "parameters": [
+          {
+            "name": "url",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResolvedUrl"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/search": {
+      "get": {
+        "tags": [
+          "youtube"
+        ],
+        "operationId": "search",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Search text; required unless `cursor` is given.",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "description": "Cursor from a previous page; the other parameters are then ignored.",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "video",
+                "channel"
+              ]
+            }
+          },
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "hour",
+                    "today",
+                    "week",
+                    "month",
+                    "year"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "name": "length",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "short",
+                    "medium",
+                    "long"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "enum": [
+                    "relevance",
+                    "date",
+                    "views"
+                  ]
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchPage"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/search/suggestions": {
+      "get": {
+        "tags": [
+          "youtube"
+        ],
+        "operationId": "suggestions",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subscriptions": {
+      "get": {
+        "tags": [
+          "subscriptions"
+        ],
+        "operationId": "list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SubscriptionInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "subscriptions"
+        ],
+        "summary": "Subscribe to a channel. Its latest uploads appear in the feed within moments.",
+        "operationId": "subscribe",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Subscribe"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Already subscribed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionInfo"
+                }
+              }
+            }
+          },
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionInfo"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subscriptions/ids": {
+      "get": {
+        "tags": [
+          "subscriptions"
+        ],
+        "summary": "Ids of subscribed channels (for subscribe buttons).",
+        "operationId": "subscribed_ids",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subscriptions/remove": {
+      "post": {
+        "tags": [
+          "subscriptions"
+        ],
+        "summary": "Unsubscribe from several channels at once.",
+        "operationId": "unsubscribe_many",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Unsubscribe"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Removed"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subscriptions/{channel_id}": {
+      "delete": {
+        "tags": [
+          "subscriptions"
+        ],
+        "operationId": "unsubscribe",
+        "parameters": [
+          {
+            "name": "channel_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subscriptions/{channel_id}/tags": {
+      "put": {
+        "tags": [
+          "feeds"
+        ],
+        "summary": "Replace a subscribed channel's tags.",
+        "operationId": "set_channel_tags",
+        "parameters": [
+          {
+            "name": "channel_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChannelTags"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {},
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tags": {
+      "get": {
+        "tags": [
+          "feeds"
+        ],
+        "operationId": "list_tags",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TagInfo"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "feeds"
+        ],
+        "operationId": "create_tag",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TagInfo"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tags/{id}": {
+      "put": {
+        "tags": [
+          "feeds"
+        ],
+        "operationId": "update_tag",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {},
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "feeds"
+        ],
+        "summary": "Delete a tag. Feeds that used it simply stop matching on it.",
+        "operationId": "delete_tag",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/tags/{id}/channels": {
+      "post": {
+        "tags": [
+          "feeds"
+        ],
+        "summary": "Add or remove a tag on several subscribed channels.",
+        "operationId": "tag_channels",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TagChannels"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {},
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/videos/{id}": {
+      "get": {
+        "tags": [
+          "youtube"
+        ],
+        "operationId": "video",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoResponse"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/videos/{id}/captions/{track}": {
+      "get": {
+        "tags": [
+          "youtube"
+        ],
+        "summary": "Subtitles as WebVTT (fetched from YouTube through this server).",
+        "operationId": "captions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "track",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/vtt": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/videos/{id}/info": {
+      "get": {
+        "tags": [
+          "youtube"
+        ],
+        "summary": "Description, channel, chapters and related videos.",
+        "operationId": "video_info",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VideoInfo"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/videos/{id}/manifest.mpd": {
+      "get": {
+        "tags": [
+          "youtube"
+        ],
+        "summary": "DASH manifest for the player; stream URLs point at the proxy.",
+        "operationId": "manifest",
+        "parameters": [
+          {
+            "name": "audio",
+            "in": "query",
+            "description": "`opus` (in sync, for browsers that play Opus/WebM) or `aac` (default, plays everywhere).",
+            "required": false,
+            "schema": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          },
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/dash+xml": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/videos/{video_id}/hide": {
+      "post": {
+        "tags": [
+          "watch"
+        ],
+        "summary": "Hide a video from feeds (\"not interested\").",
+        "operationId": "hide_video",
+        "parameters": [
+          {
+            "name": "video_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "watch"
+        ],
+        "operationId": "unhide_video",
+        "parameters": [
+          {
+            "name": "video_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {},
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/videos/{video_id}/segments": {
+      "get": {
+        "tags": [
+          "community"
+        ],
+        "operationId": "segments",
+        "parameters": [
+          {
+            "name": "video_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Segment"
+                  }
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/videos/{video_id}/watched": {
+      "post": {
+        "tags": [
+          "watch"
+        ],
+        "summary": "Mark a video as watched without playing it.",
+        "operationId": "mark_watched",
+        "parameters": [
+          {
+            "name": "video_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProgressInfo"
+                }
+              }
+            }
+          },
+          "4XX": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AddItem": {
+        "type": "object",
+        "required": [
+          "video_id"
+        ],
+        "properties": {
+          "video_id": {
+            "type": "string"
+          }
+        }
+      },
+      "Added": {
+        "type": "object",
+        "required": [
+          "added"
+        ],
+        "properties": {
+          "added": {
+            "type": "boolean",
+            "description": "False if the video was already in the list."
+          }
+        }
+      },
+      "AdminSettings": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/InstanceSettings"
+          },
+          {
+            "type": "object",
+            "required": [
+              "passkeys_available",
+              "proxy_video",
+              "public_url"
+            ],
+            "properties": {
+              "passkeys_available": {
+                "type": "boolean"
+              },
+              "passkeys_unavailable_reason": {
+                "type": [
+                  "string",
+                  "null"
+                ],
+                "description": "Explains how to enable passkeys when they are unavailable."
+              },
+              "proxy_video": {
+                "type": "boolean"
+              },
+              "public_url": {
+                "type": "string"
+              }
+            }
+          }
+        ]
+      },
+      "AudioTrackInfo": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "is_default"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "is_default": {
+            "type": "boolean"
+          },
+          "lang": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthConfig": {
+        "type": "object",
+        "required": [
+          "passkeys_available",
+          "passwords_enabled",
+          "registration_mode",
+          "needs_setup"
+        ],
+        "properties": {
+          "invite_valid": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "Whether the `invite` query parameter is a usable invite."
+          },
+          "needs_setup": {
+            "type": "boolean",
+            "description": "No accounts yet: the first registration creates the admin."
+          },
+          "passkeys_available": {
+            "type": "boolean",
+            "description": "Passkeys work on this instance (HTTPS + domain name, or localhost)."
+          },
+          "passwords_enabled": {
+            "type": "boolean",
+            "description": "Password login/registration allowed."
+          },
+          "registration_mode": {
+            "$ref": "#/components/schemas/RegistrationMode"
+          }
+        }
+      },
+      "BrandingRequest": {
+        "type": "object",
+        "required": [
+          "ids"
+        ],
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "ByteRange": {
+        "type": "object",
+        "description": "Inclusive byte range, as used in DASH `indexRange` / `Initialization@range`.",
+        "required": [
+          "start",
+          "end"
+        ],
+        "properties": {
+          "end": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "start": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        }
+      },
+      "CaptionTrack": {
+        "type": "object",
+        "description": "A subtitle track, served as WebVTT by this server.",
+        "required": [
+          "id",
+          "lang",
+          "label",
+          "auto_generated",
+          "url"
+        ],
+        "properties": {
+          "auto_generated": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string",
+            "description": "Track id for the captions endpoint, e.g. `en` or `en.asr`."
+          },
+          "label": {
+            "type": "string"
+          },
+          "lang": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "Challenge": {
+        "type": "object",
+        "description": "Options to pass to `navigator.credentials.create/get` (via @simplewebauthn/browser).",
+        "required": [
+          "challenge_id",
+          "options"
+        ],
+        "properties": {
+          "challenge_id": {
+            "type": "string"
+          },
+          "options": {
+            "type": "object"
+          }
+        }
+      },
+      "ChannelCard": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "properties": {
+          "avatar_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "handle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "subscriber_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "ChannelInfo": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description",
+          "has_shorts",
+          "has_live"
+        ],
+        "properties": {
+          "avatar_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "banner_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "description": {
+            "type": "string"
+          },
+          "handle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "has_live": {
+            "type": "boolean"
+          },
+          "has_shorts": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "subscriber_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 0
+          },
+          "video_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "ChannelPage": {
+        "type": "object",
+        "required": [
+          "channel",
+          "videos"
+        ],
+        "properties": {
+          "channel": {
+            "$ref": "#/components/schemas/ChannelInfo"
+          },
+          "videos": {
+            "$ref": "#/components/schemas/VideoPage"
+          }
+        }
+      },
+      "ChannelRef": {
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "properties": {
+          "avatar_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ChannelTags": {
+        "type": "object",
+        "required": [
+          "tag_ids"
+        ],
+        "properties": {
+          "tag_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        }
+      },
+      "Chapter": {
+        "type": "object",
+        "required": [
+          "title",
+          "start_s"
+        ],
+        "properties": {
+          "start_s": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "title": {
+            "type": "string"
+          }
+        }
+      },
+      "ContinueItem": {
+        "type": "object",
+        "required": [
+          "video",
+          "position_s",
+          "duration_s",
+          "updated_at"
+        ],
+        "properties": {
+          "duration_s": {
+            "type": "number",
+            "format": "double"
+          },
+          "position_s": {
+            "type": "number",
+            "format": "double"
+          },
+          "updated_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "video": {
+            "$ref": "#/components/schemas/VideoCard"
+          }
+        }
+      },
+      "CreateInvite": {
+        "type": "object",
+        "properties": {
+          "expires_in_days": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Validity in days (1–30, default 7)."
+          },
+          "note": {
+            "type": "string",
+            "description": "Who the invite is for, shown in the admin list."
+          }
+        }
+      },
+      "CreateUser": {
+        "type": "object",
+        "required": [
+          "username"
+        ],
+        "properties": {
+          "is_admin": {
+            "type": "boolean"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "CreatedInvite": {
+        "type": "object",
+        "required": [
+          "invite",
+          "link"
+        ],
+        "properties": {
+          "invite": {
+            "$ref": "#/components/schemas/InviteInfo"
+          },
+          "link": {
+            "$ref": "#/components/schemas/CreatedLink"
+          }
+        }
+      },
+      "CreatedLink": {
+        "type": "object",
+        "description": "A one-time link; the secret is only ever shown here.",
+        "required": [
+          "url",
+          "expires_at"
+        ],
+        "properties": {
+          "expires_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "url": {
+            "type": "string"
+          }
+        }
+      },
+      "CreatedUser": {
+        "type": "object",
+        "required": [
+          "id",
+          "setup_link"
+        ],
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "setup_link": {
+            "$ref": "#/components/schemas/CreatedLink",
+            "description": "Send this to the user so they can set up a passkey or password."
+          }
+        }
+      },
+      "CredentialBody": {
+        "type": "object",
+        "required": [
+          "challenge_id",
+          "credential"
+        ],
+        "properties": {
+          "challenge_id": {
+            "type": "string"
+          },
+          "credential": {
+            "type": "object",
+            "description": "The browser's `PublicKeyCredential` as JSON."
+          },
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Name for a newly registered passkey, e.g. \"iPhone\"."
+          }
+        }
+      },
+      "ErrorBody": {
+        "type": "object",
+        "description": "Error body of every failed API request.",
+        "required": [
+          "error",
+          "message"
+        ],
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Machine-readable code, e.g. `unauthorized`, `reauth_required`."
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Features": {
+        "type": "object",
+        "description": "Optional integrations this instance has switched on.",
+        "required": [
+          "sponsorblock",
+          "dearrow_titles",
+          "dearrow_thumbnails"
+        ],
+        "properties": {
+          "dearrow_thumbnails": {
+            "type": "boolean"
+          },
+          "dearrow_titles": {
+            "type": "boolean"
+          },
+          "sponsorblock": {
+            "type": "boolean"
+          }
+        }
+      },
+      "FeedBody": {
+        "type": "object",
+        "required": [
+          "name",
+          "filter"
+        ],
+        "properties": {
+          "filter": {
+            "$ref": "#/components/schemas/FeedFilter"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "FeedFilter": {
+        "type": "object",
+        "description": "Which videos a feed shows. Every field is optional; the default shows\neverything from all subscriptions except Shorts.",
+        "properties": {
+          "channels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Channels to include besides the tagged ones.",
+            "default": []
+          },
+          "exclude_channels": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "default": []
+          },
+          "live": {
+            "type": "boolean",
+            "description": "Include live streams and premieres.",
+            "default": true
+          },
+          "max_duration_s": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "default": null,
+            "minimum": 0
+          },
+          "min_duration_s": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "default": null,
+            "minimum": 0
+          },
+          "published_within_days": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "default": null,
+            "minimum": 0
+          },
+          "shorts": {
+            "type": "boolean",
+            "description": "Include Shorts.",
+            "default": false
+          },
+          "tag_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Only channels with any of these tags (or listed in `channels`).",
+            "default": []
+          },
+          "title_any": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Title contains any of these (case-insensitive). Empty: no restriction.",
+            "default": []
+          },
+          "title_none": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Title contains none of these.",
+            "default": []
+          },
+          "title_regex": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Case-insensitive regular expression the title must match.",
+            "default": null
+          },
+          "watched": {
+            "$ref": "#/components/schemas/WatchedFilter",
+            "default": "all"
+          }
+        }
+      },
+      "FeedInfo": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "filter"
+        ],
+        "properties": {
+          "filter": {
+            "$ref": "#/components/schemas/FeedFilter"
+          },
+          "icon": {
+            "type": "string",
+            "description": "An emoji or short text shown with the name."
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "FeedItem": {
+        "type": "object",
+        "required": [
+          "video"
+        ],
+        "properties": {
+          "progress": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ProgressInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "video": {
+            "$ref": "#/components/schemas/VideoCard"
+          }
+        }
+      },
+      "FeedOrder": {
+        "type": "object",
+        "required": [
+          "ids"
+        ],
+        "properties": {
+          "ids": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "description": "Feed ids in the new order."
+          }
+        }
+      },
+      "FeedPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "cursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "More results after this; `null` when the feed is exhausted."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/FeedItem"
+            }
+          }
+        }
+      },
+      "ImportResult": {
+        "type": "object",
+        "description": "What a restore added; anything already in the account is left as it is.",
+        "required": [
+          "subscriptions",
+          "tags",
+          "feeds",
+          "lists",
+          "list_items",
+          "progress",
+          "hidden"
+        ],
+        "properties": {
+          "feeds": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "hidden": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "list_items": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "lists": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "progress": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "subscriptions": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "tags": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "InstanceSettings": {
+        "type": "object",
+        "required": [
+          "registration_mode",
+          "passwords_enabled"
+        ],
+        "properties": {
+          "passwords_enabled": {
+            "type": "boolean",
+            "description": "Allow passwords as a fallback to passkeys."
+          },
+          "registration_mode": {
+            "$ref": "#/components/schemas/RegistrationMode"
+          }
+        }
+      },
+      "InviteInfo": {
+        "type": "object",
+        "required": [
+          "id",
+          "note",
+          "created_at",
+          "expires_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "expires_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "note": {
+            "type": "string"
+          },
+          "used_at": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "used_by": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          }
+        }
+      },
+      "ListBody": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "remove_watched": {
+            "type": "boolean"
+          }
+        }
+      },
+      "ListDetail": {
+        "type": "object",
+        "required": [
+          "list",
+          "items"
+        ],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ListItem"
+            }
+          },
+          "list": {
+            "$ref": "#/components/schemas/ListInfo"
+          }
+        }
+      },
+      "ListInfo": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "name",
+          "description",
+          "remove_watched",
+          "item_count",
+          "total_duration_s",
+          "updated_at"
+        ],
+        "properties": {
+          "contains": {
+            "type": [
+              "boolean",
+              "null"
+            ],
+            "description": "With `?contains=`: whether the video is in this list."
+          },
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "item_count": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/ListKind"
+          },
+          "name": {
+            "type": "string"
+          },
+          "remove_watched": {
+            "type": "boolean",
+            "description": "Videos are removed once watched to the end."
+          },
+          "thumbnail_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "total_duration_s": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "updated_at": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "ListItem": {
+        "type": "object",
+        "required": [
+          "video",
+          "added_at"
+        ],
+        "properties": {
+          "added_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "progress": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ProgressInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "video": {
+            "$ref": "#/components/schemas/VideoCard"
+          }
+        }
+      },
+      "ListKind": {
+        "type": "string",
+        "enum": [
+          "watch_later",
+          "custom"
+        ]
+      },
+      "LoginResult": {
+        "type": "object",
+        "required": [
+          "user",
+          "used_recovery_code"
+        ],
+        "properties": {
+          "used_recovery_code": {
+            "type": "boolean",
+            "description": "Set when logging in used a recovery code: the user should add a new passkey or password."
+          },
+          "user": {
+            "$ref": "#/components/schemas/Me"
+          }
+        }
+      },
+      "Me": {
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "is_admin",
+          "has_password",
+          "passkey_count",
+          "recovery_codes_remaining",
+          "settings"
+        ],
+        "properties": {
+          "has_password": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "is_admin": {
+            "type": "boolean"
+          },
+          "passkey_count": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "recovery_codes_remaining": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "settings": {
+            "type": "object"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "MoveItem": {
+        "type": "object",
+        "properties": {
+          "after": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Place the video right after this one; `null` moves it to the top."
+          }
+        }
+      },
+      "NewPassword": {
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "properties": {
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "PasskeyInfo": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "last_used_at": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "PasswordLogin": {
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "PasswordReauth": {
+        "type": "object",
+        "required": [
+          "password"
+        ],
+        "properties": {
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "Preview": {
+        "type": "object",
+        "required": [
+          "filter"
+        ],
+        "properties": {
+          "cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "filter": {
+            "$ref": "#/components/schemas/FeedFilter"
+          }
+        }
+      },
+      "ProgressInfo": {
+        "type": "object",
+        "required": [
+          "video_id",
+          "position_s",
+          "duration_s",
+          "finished",
+          "updated_at"
+        ],
+        "properties": {
+          "duration_s": {
+            "type": "number",
+            "format": "double"
+          },
+          "finished": {
+            "type": "boolean"
+          },
+          "position_s": {
+            "type": "number",
+            "format": "double"
+          },
+          "updated_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "video_id": {
+            "type": "string"
+          }
+        }
+      },
+      "RecoveryCodes": {
+        "type": "object",
+        "required": [
+          "recovery_codes"
+        ],
+        "properties": {
+          "recovery_codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "RecoveryLogin": {
+        "type": "object",
+        "required": [
+          "username",
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "RegisterPassword": {
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "invite": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "password": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "RegisterStart": {
+        "type": "object",
+        "required": [
+          "username"
+        ],
+        "properties": {
+          "invite": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "RegistrationMode": {
+        "type": "string",
+        "enum": [
+          "open",
+          "invite",
+          "closed"
+        ]
+      },
+      "Removed": {
+        "type": "object",
+        "required": [
+          "removed"
+        ],
+        "properties": {
+          "removed": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "Rename": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ResetInfo": {
+        "type": "object",
+        "required": [
+          "username",
+          "passkeys_available",
+          "passwords_enabled"
+        ],
+        "properties": {
+          "passkeys_available": {
+            "type": "boolean"
+          },
+          "passwords_enabled": {
+            "type": "boolean"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "ResolvedUrl": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "start_s",
+              "type"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "start_s": {
+                "type": "integer",
+                "format": "int32",
+                "minimum": 0
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "video"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "channel"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "id",
+              "type"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "playlist"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "What a pasted YouTube URL points to."
+      },
+      "SaveProgress": {
+        "type": "object",
+        "required": [
+          "position_s",
+          "duration_s"
+        ],
+        "properties": {
+          "duration_s": {
+            "type": "number",
+            "format": "double"
+          },
+          "position_s": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "SearchItem": {
+        "oneOf": [
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/VideoCard"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "video"
+                    ]
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ChannelCard"
+              },
+              {
+                "type": "object",
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "channel"
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "SearchPage": {
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "corrected_query": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "cursor": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Opaque token for fetching the next page."
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SearchItem"
+            }
+          }
+        }
+      },
+      "Segment": {
+        "type": "object",
+        "required": [
+          "category",
+          "action",
+          "start_s",
+          "end_s",
+          "uuid"
+        ],
+        "properties": {
+          "action": {
+            "type": "string",
+            "description": "`skip`, `mute`, `poi` (a highlight: a single point) or `full` (the whole video is\ne.g. sponsored)."
+          },
+          "category": {
+            "type": "string"
+          },
+          "end_s": {
+            "type": "number",
+            "format": "double"
+          },
+          "start_s": {
+            "type": "number",
+            "format": "double"
+          },
+          "uuid": {
+            "type": "string"
+          }
+        }
+      },
+      "SessionInfo": {
+        "type": "object",
+        "required": [
+          "id",
+          "user_agent",
+          "created_at",
+          "last_seen_at",
+          "current"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "current": {
+            "type": "boolean",
+            "description": "The session making this request."
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "last_seen_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "user_agent": {
+            "type": "string"
+          }
+        }
+      },
+      "SignupResult": {
+        "type": "object",
+        "required": [
+          "user",
+          "recovery_codes"
+        ],
+        "properties": {
+          "recovery_codes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Shown once; store them somewhere safe."
+          },
+          "user": {
+            "$ref": "#/components/schemas/Me"
+          }
+        }
+      },
+      "Stream": {
+        "type": "object",
+        "required": [
+          "id",
+          "kind",
+          "itag",
+          "mime_type",
+          "codecs",
+          "bitrate",
+          "hdr"
+        ],
+        "properties": {
+          "audio_channels": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "minimum": 0
+          },
+          "audio_track": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/AudioTrackInfo"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "bitrate": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "codecs": {
+            "type": "string",
+            "description": "Codec string, e.g. `avc1.640028`."
+          },
+          "fps": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "minimum": 0
+          },
+          "hdr": {
+            "type": "boolean"
+          },
+          "height": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "minimum": 0
+          },
+          "id": {
+            "type": "string",
+            "description": "Unique within a [`Playback`]: the itag, plus the audio track for multi-language videos."
+          },
+          "index_range": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ByteRange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "init_range": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ByteRange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "itag": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "kind": {
+            "$ref": "#/components/schemas/StreamKind"
+          },
+          "mime_type": {
+            "type": "string",
+            "description": "Container mime type, e.g. `video/mp4`."
+          },
+          "quality_label": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "size": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 0
+          },
+          "width": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "minimum": 0
+          }
+        }
+      },
+      "StreamKind": {
+        "type": "string",
+        "enum": [
+          "muxed",
+          "video",
+          "audio"
+        ]
+      },
+      "Subscribe": {
+        "type": "object",
+        "required": [
+          "channel_id"
+        ],
+        "properties": {
+          "channel_id": {
+            "type": "string"
+          }
+        }
+      },
+      "SubscriptionInfo": {
+        "type": "object",
+        "required": [
+          "channel_id",
+          "name",
+          "subscribed_at",
+          "tag_ids"
+        ],
+        "properties": {
+          "avatar_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "channel_id": {
+            "type": "string"
+          },
+          "fetch_error": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Why the last refresh failed, if it did."
+          },
+          "fetched_at": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Last refresh; `null` until the first one."
+          },
+          "handle": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "last_video_at": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Newest upload seen."
+          },
+          "name": {
+            "type": "string"
+          },
+          "subscribed_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "subscriber_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "tag_ids": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        }
+      },
+      "TagBody": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "color": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "TagChannels": {
+        "type": "object",
+        "required": [
+          "channel_ids",
+          "add"
+        ],
+        "properties": {
+          "add": {
+            "type": "boolean",
+            "description": "`true` adds the tag, `false` removes it."
+          },
+          "channel_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "TagInfo": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "color"
+        ],
+        "properties": {
+          "color": {
+            "type": "string",
+            "description": "One of the palette names (`red`, `blue`, …) or empty."
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "TextPart": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "text",
+              "type"
+            ],
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "text"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "text",
+              "url",
+              "type"
+            ],
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "link"
+                ]
+              },
+              "url": {
+                "type": "string"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "text",
+              "id",
+              "start_s",
+              "type"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "start_s": {
+                "type": "integer",
+                "format": "int32",
+                "minimum": 0
+              },
+              "text": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "video"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "text",
+              "id",
+              "type"
+            ],
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "text": {
+                "type": "string"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "channel"
+                ]
+              }
+            }
+          }
+        ],
+        "description": "A piece of a video description. YouTube links are resolved so the app can\nkeep them inside Katsanto (and turn timestamps into seeks)."
+      },
+      "Unsubscribe": {
+        "type": "object",
+        "required": [
+          "channel_ids"
+        ],
+        "properties": {
+          "channel_ids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      },
+      "UpdateSettings": {
+        "type": "object",
+        "properties": {
+          "passwords_enabled": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "registration_mode": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/RegistrationMode"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        }
+      },
+      "UpdateUser": {
+        "type": "object",
+        "properties": {
+          "disabled": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          },
+          "is_admin": {
+            "type": [
+              "boolean",
+              "null"
+            ]
+          }
+        }
+      },
+      "UserInfo": {
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "is_admin",
+          "disabled",
+          "created_at",
+          "has_password",
+          "passkey_count"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "disabled": {
+            "type": "boolean"
+          },
+          "has_password": {
+            "type": "boolean"
+          },
+          "id": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "is_admin": {
+            "type": "boolean"
+          },
+          "last_login_at": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "passkey_count": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "username": {
+            "type": "string"
+          }
+        }
+      },
+      "VideoBranding": {
+        "type": "object",
+        "description": "A DeArrow title and/or thumbnail; videos without one are left out of the response.",
+        "properties": {
+          "thumbnail_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "VideoCard": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "is_live",
+          "is_short",
+          "is_upcoming"
+        ],
+        "properties": {
+          "channel": {
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/ChannelRef"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "duration_s": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "minimum": 0
+          },
+          "id": {
+            "type": "string"
+          },
+          "is_live": {
+            "type": "boolean"
+          },
+          "is_short": {
+            "type": "boolean"
+          },
+          "is_upcoming": {
+            "type": "boolean"
+          },
+          "published_at": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Unix timestamp, when YouTube provides an exact date."
+          },
+          "published_text": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Relative date as displayed by YouTube (\"3 days ago\")."
+          },
+          "thumbnail_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "view_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "VideoDetails": {
+        "type": "object",
+        "required": [
+          "id",
+          "title",
+          "channel",
+          "duration_s",
+          "is_live"
+        ],
+        "properties": {
+          "channel": {
+            "$ref": "#/components/schemas/ChannelRef"
+          },
+          "description": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "duration_s": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          },
+          "id": {
+            "type": "string"
+          },
+          "is_live": {
+            "type": "boolean"
+          },
+          "thumbnail_url": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "view_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "VideoInfo": {
+        "type": "object",
+        "description": "Watch-page information beyond what playback needs.",
+        "required": [
+          "id",
+          "title",
+          "description",
+          "channel",
+          "view_count",
+          "is_live",
+          "chapters",
+          "related"
+        ],
+        "properties": {
+          "channel": {
+            "$ref": "#/components/schemas/ChannelCard"
+          },
+          "chapters": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Chapter"
+            }
+          },
+          "description": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TextPart"
+            }
+          },
+          "id": {
+            "type": "string"
+          },
+          "is_live": {
+            "type": "boolean"
+          },
+          "like_count": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int32",
+            "minimum": 0
+          },
+          "published_at": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64"
+          },
+          "published_text": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "related": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VideoCard"
+            }
+          },
+          "title": {
+            "type": "string"
+          },
+          "view_count": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          }
+        }
+      },
+      "VideoPage": {
+        "type": "object",
+        "description": "A page of videos with an opaque cursor for the next one.",
+        "required": [
+          "items"
+        ],
+        "properties": {
+          "cursor": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VideoCard"
+            }
+          }
+        }
+      },
+      "VideoResponse": {
+        "type": "object",
+        "required": [
+          "details",
+          "manifest_url",
+          "streams",
+          "captions"
+        ],
+        "properties": {
+          "captions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CaptionTrack"
+            }
+          },
+          "details": {
+            "$ref": "#/components/schemas/VideoDetails"
+          },
+          "manifest_url": {
+            "type": "string"
+          },
+          "streams": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Stream"
+            }
+          }
+        }
+      },
+      "WatchedFilter": {
+        "type": "string",
+        "enum": [
+          "all",
+          "hide_finished",
+          "only_unwatched",
+          "in_progress"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "auth",
+      "description": "Registration, login, recovery, re-authentication"
+    },
+    {
+      "name": "me",
+      "description": "The logged-in user's account"
+    },
+    {
+      "name": "admin",
+      "description": "Instance administration (admins only)"
+    },
+    {
+      "name": "youtube",
+      "description": "Search, video and channel data"
+    },
+    {
+      "name": "watch",
+      "description": "Watch progress"
+    },
+    {
+      "name": "subscriptions",
+      "description": "Subscriptions and the feed"
+    },
+    {
+      "name": "feeds",
+      "description": "Tags and saved feeds"
+    },
+    {
+      "name": "lists",
+      "description": "Watch lists"
+    },
+    {
+      "name": "community",
+      "description": "SponsorBlock and DeArrow"
+    }
+  ]
+}

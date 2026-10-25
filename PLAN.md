@@ -10,7 +10,7 @@ A lightweight, self-hostable, privacy-friendly YouTube front-end written in Rust
 | Aspect | Invidious | Katsanto |
 |---|---|---|
 | Language | Crystal (Kemal web framework) | Rust (axum + tokio) |
-| YouTube access | Own Innertube extractor + **Invidious Companion** (Deno, YouTube.js) for streams / attestation | [`rustypipe`](https://codeberg.org/ThetaDev/rustypipe) + `rustypipe-botguard` for PO tokens |
+| YouTube access | Own Innertube extractor + **Invidious Companion** (Deno, YouTube.js) for streams / attestation | [`rustypipe`](https://codeberg.org/ThetaDev/rustypipe) for search/metadata; **own Rust player extraction** (Innertube + yt-dlp's `ejs` solver in embedded QuickJS) + `rustypipe-botguard` for PO tokens |
 | Database | PostgreSQL (required) | SQLite by default (single file, zero ops); Postgres optional later |
 | Frontend | Server-rendered templates, Video.js player | SPA (SvelteKit), design-token theming, Vidstack player |
 | Feed refresh | Background jobs polling channels + optional PubSubHubbub | Same idea: RSS polling worker + optional WebSub |
@@ -31,30 +31,45 @@ import/sync at all — subscriptions and watch lists live only in Katsanto and a
 
 ### Backend (Rust)
 - **HTTP:** `axum` + `tokio` + `tower-http` (compression, CORS, tracing, static files).
-- **YouTube:** `rustypipe` (features: `rss`, `rustls-tls-*`; **no `userdata`** — all requests are anonymous).
-  - `search()` (with filters) + search suggestions → search; `player()` → stream URLs, subtitles;
-    `channel_videos()` / `channel_rss()` → feeds; URL resolver for pasted links.
-  - PO tokens: ship `rustypipe-botguard` next to the binary (rustypipe auto-detects it).
-  - rustypipe cache (client versions, deobfuscation code) → custom `CacheStorage` backed by our DB/data dir.
-- **DB:** `sqlx` with SQLite (WAL mode), compile-time checked queries, migrations in `migrations/`.
+- **YouTube metadata:** `rustypipe` (features: `rss`, `rustls-tls-*`; **no `userdata`** — all requests anonymous):
+  `search()` (with filters) + suggestions, `channel_videos()` / `channel_rss()`, URL resolver.
+  ⚠️ rustypipe has had no functional commits since June 2025 and its player deobfuscation no longer
+  works with YouTube's current player — so we use it only for metadata, behind the `YoutubeSource` trait.
+- **Playback (own implementation, M0 finding — same approach as Invidious Companion, in Rust):**
+  - Innertube `/player` request with the **`TVHTML5_SIMPLY`** client (WEB returns no stream URLs anymore
+    because of YouTube's server-side ABR; this is the client Companion falls back to).
+  - **`n` / signature solving** with yt-dlp's [`ejs`](https://github.com/yt-dlp/ejs) solver (public domain,
+    maintained by yt-dlp) running in embedded QuickJS (`rquickjs`). Vendored in `katsanto-yt/assets/ejs`,
+    overridable from `<data_dir>/ejs/` so solver updates don't need a rebuild. Results cached per player version.
+  - **PO tokens** (session token bound to visitor data, appended as `pot=`) from `rustypipe-botguard`
+    (minted with `--no-snapshot`), shipped next to the binary. Without it googlevideo returns 403 after
+    ~2.6 MB. If fresh stream URLs are still rejected, the proxy starts a new YouTube session and retries.
+  - Verified 2026-10-24: TV_SIMPLY + solved `n` + PO token → full 1080p file served (all ranges 206);
+    ANDROID_VR / MWEB / iOS fail or are cut off.
+- **DB:** `sqlx` with SQLite (WAL mode), migrations in `crates/katsanto-db/migrations/`. Queries are
+  runtime-checked (no `DATABASE_URL`/`sqlx prepare` tooling) and every query is covered by tests.
 - **Caching:** `moka` in-memory cache for video metadata, player responses (stream URLs expire ~6 h), channel info.
 - **Background jobs:** tokio tasks + a small job table in DB (no external queue).
 - **Auth:** local Katsanto accounts — **passkeys first** (`webauthn-rs`, discoverable credentials /
-  conditional UI), **password fallback** (`argon2id`), `tower-sessions` (sessions in SQLite,
-  `HttpOnly` + `Secure` + `SameSite=Lax` cookies), login rate limiting (`tower_governor`). See §5.0.
+  conditional UI), **password fallback** (`argon2id`), own cookie sessions (hashed random tokens in the
+  `sessions` table — needed for per-user session lists and "sign out everywhere", which `tower-sessions`
+  doesn't offer), `HttpOnly` + `Secure` + `SameSite=Lax` cookies, rate limiting (`tower_governor`). See §5.0.
 - **API docs:** `utoipa` → OpenAPI spec → generated TypeScript client for the frontend.
 - **Config:** `figment` (TOML file + env vars).
 - **Frontend embedding:** `rust-embed` so the release is one binary (built from `web/` with `adapter-static`).
 - **License:** rustypipe is **GPL-3.0** → Katsanto must be GPL-3.0-compatible. Recommend **AGPL-3.0** (same as Invidious; fits a network service).
 
 ### Frontend
-- **Framework:** **SvelteKit** (Svelte 5 runes) with `adapter-static` (SPA mode) + TypeScript. Small bundles, fast on mobile.
+- **Framework:** **SvelteKit 3** (Svelte 5 runes) with `adapter-static` (SPA mode) + TypeScript. Small bundles, fast on mobile.
 - **Styling:** Tailwind CSS v4 driven entirely by **CSS custom properties (design tokens)**.
 - **Components:** headless primitives (Bits UI / Melt UI) styled by our tokens → accessible & themeable.
-- **Player:** [Vidstack](https://vidstack.io/) (now continuing as Video.js v10) — modern, touch-friendly, PiP,
-  keyboard shortcuts, chapters, captions, playback speed. DASH via `dash.js` (or Shaka Player) provider.
+- **Player:** **Video.js 10** (successor of Vidstack, Plyr and Media Chrome) — modern, touch-friendly, PiP,
+  keyboard shortcuts, chapters, captions, playback speed; DASH via dash.js or Shaka Player.
+  The M0 spike page uses Vidstack 1.x from CDN, which now logs that it is deprecated in favour of Video.js 10
+  (security fixes only until Jan 2028) — so M1 starts on Video.js 10.
 - **Passkeys:** `@simplewebauthn/browser` (JSON ↔ WebAuthn conversion, feature detection, autofill UI).
-- **Data:** TanStack Query (Svelte) for caching/invalidations; generated API client.
+- **Data:** typed client generated from the server's OpenAPI spec (`openapi-typescript` + `openapi-fetch`);
+  TanStack Query when feeds need caching/invalidation (M3).
 - **PWA:** installable, offline shell, Media Session API (lock screen controls), background audio.
 - **Lists:** virtualized infinite scroll for feeds.
 
@@ -79,6 +94,7 @@ import/sync at all — subscriptions and watch lists live only in Katsanto and a
 │  storage:  SQLite (sqlx)  +  moka in-memory cache                        │
 └────────────────────────────────┬─────────────────────────────────────────┘
                                  │ Innertube / RSS / googlevideo
+        rustypipe (metadata) · own player client + ejs in QuickJS (streams)
                      rustypipe-botguard (PO tokens, subprocess)
 ```
 
@@ -91,7 +107,7 @@ katsanto/
 │   ├── katsanto-server/       # axum app, routes, auth, config, main.rs
 │   ├── katsanto-core/         # domain models, services, feed filter engine
 │   ├── katsanto-db/           # sqlx queries + migrations
-│   └── katsanto-yt/           # trait `YoutubeSource` + rustypipe impl (+ mock for tests)
+│   └── katsanto-yt/           # trait `YoutubeSource`; rustypipe (metadata) + own player/solver/PO token (streams)
 ├── web/                       # SvelteKit app
 ├── migrations/
 ├── docker/                    # Dockerfile (multi-stage, distroless/alpine), compose example
@@ -195,7 +211,9 @@ progress exist only in Katsanto's database.
 - **No guest access:** every page and API endpoint (search, playback, proxy, thumbnails) requires a session;
   unauthenticated requests get `401` / redirect to `/login`. Only `/login`, `/register?invite=…`,
   `/reset?token=…`, the auth API endpoints and static assets are public. This also keeps the stream proxy from being used as an open relay.
-- CSRF: `SameSite=Lax` cookies + required custom header (`X-Katsanto: 1`) on state-changing API calls.
+- CSRF: `SameSite=Lax` cookies + state-changing requests must come from `public_url`'s origin
+  (`Origin` / `Sec-Fetch-Site` check). Unlike a custom header this also works for `navigator.sendBeacon`
+  (progress saving).
 
 ### 5.1 Search (new)
 Search is the main way to discover content, build subscriptions and fill watch lists.
@@ -362,42 +380,83 @@ Cursor-based pagination (`published_at,id`) everywhere for feeds.
 
 ## 7. Milestones
 
-**M0 — Spike / de-risk (≈1 week)**
-- Minimal Rust binary: rustypipe `search()` → `player()` for a result → generate DASH MPD → play in a bare
-  Vidstack page through the proxy. Confirm PO token flow with `rustypipe-botguard`.
+**M0 — Spike / de-risk (≈1 week)** — *playback part done 2026-10-24 (branch `m0-spike`)*: search → own player
+client → DASH → proxy → Vidstack verified in headless Chromium (1080p, seek to 7 h into a 14 h video, all media
+via proxy). Passkey round-trip still open.
+- Minimal Rust binary: rustypipe `search()` → own TV_SIMPLY player request (ejs solver + PO token) →
+  generate DASH MPD → play in a bare Vidstack page through the proxy.
 - Measure: request latency, memory footprint, RSS polling cost for ~200 channels.
 - Passkey round-trip with `webauthn-rs` + `@simplewebauthn/browser` on iOS Safari, Android Chrome and a desktop
   browser behind HTTPS (e.g. Tailscale or a reverse proxy).
 - *Exit criteria:* passkey login works on those devices; search returns results and 1080p playback with seeking **through the proxy** works on
   desktop Firefox/Chrome and iOS Safari / Android Chrome.
 
-**M1 — Skeleton**
+**M1 — Skeleton** — *done 2026-10-24 (branch `m1-skeleton`)*: 51 Rust tests (incl. end-to-end API tests
+with a software passkey), browser E2E with a virtual authenticator (signup, autofill + button login, invites,
+recovery, admin). Search page exists; playback UI moves to M2.
 - Workspace, config, tracing, SQLite + migrations, OpenAPI, CI (fmt, clippy, tests).
 - Local accounts: first-user admin bootstrap, invite links, **passkey registration/login (autofill UI)**,
   password fallback, auto password-only mode without HTTPS/domain, recovery codes, admin reset links,
   session management, basic admin UI.
 - SvelteKit app shell: routing, layout (sidebar/bottom-nav), token-based theme system with Light/Dark, API client.
 
-**M2 — Search & watch**
+**M2 — Search & watch** — *done 2026-10-24 (branch `m2-watch`)*: Video.js 10 player (`dash-video`) with
+captions, chapters, audio tracks, resume and Continue watching; search with suggestions, filters, link
+resolving and infinite scroll; channel pages. Channel tabs and related videos are parsed by Katsanto
+(`katsanto-yt/src/channel.rs`) because rustypipe 0.11 doesn't understand YouTube's `lockupViewModel`.
+Finding: BotGuard tokens minted from a reused snapshot go stale, and YouTube also rejects tokens for a
+while after heavy use from one IP; the proxy now retries with fresh player data, then a new session.
 - Search with suggestions, filters, infinite scroll, URL resolving; shared video/channel card components.
 - Video page with player, metadata, captions; channel page; thumbnail proxy.
 - Watch progress saving/resume + Continue watching.
 
-**M3 — Subscriptions & feed**
+**M3 — Subscriptions & feed** — *done 2026-10-24 (branch `m3-feed`)*: subscribe from search, watch and
+channel pages; Subscriptions page with refresh status and bulk unsubscribe; background refresher (own
+RSS parser → channel-tab enrichment for duration/Shorts/live, adaptive intervals with jitter and backoff,
+woken on subscribe); feed with Shorts/watched toggles and infinite scroll; live "new videos" via SSE.
+Tagging channels moved to M4 with the feed filters it drives.
 - Subscribe/unsubscribe from search results, video and channel pages; manage subscriptions page.
 - Feed refresher + enricher workers, SSE updates, "All" feed with infinite scroll.
 
-**M4 — Multiple feeds & filtering**
+**M4 — Multiple feeds & filtering** — *done 2026-10-24 (branch `m4-feeds`)*: tags on channels (inline and
+bulk on the Subscriptions page), saved feeds as tabs on Home (tags/channels, title keywords + regex, length,
+Shorts/live, watched state, recency), feed editor with live preview, quick filter bar with "Save as feed",
+reordering, hide / mark watched from the card menu. Filters compile to SQL except title matching, which runs
+in Rust (Unicode case folding, regex) with batched scanning to fill pages.
 - Tags on channels, feed editor with live preview, quick filter bar, hide/mark-watched.
 
-**M5 — Watch lists**
+**M5 — Watch lists** — *done 2026-10-24 (branch `m5-lists`)*: Watch later (created on first use, removes
+watched videos) plus custom lists (optional "remove watched"); "Save to Watch later" / "Save to list…" on every
+card and the watch page; list pages with drag & drop and ↑/↓ reordering (fractional positions, renumbered when
+floats run out), sorting, hide watched, move between lists; play-list mode on the watch page with autoplay of the
+next unwatched video and a session-stable shuffle. Videos are stored server-side when added (metadata isn't
+taken from the client, since the videos table is shared).
 - Watch later + custom lists, "add to list" from search/feeds/player, drag-drop reorder, play-list mode.
 
-**M6 — Customization & polish**
+**M6 — Customization & polish** — *done 2026-10-24 (branch `m6-polish`)*: appearance editor (5 themes,
+accent presets or any color with automatic text contrast, corners, font, density, grid/list layout, card size,
+what cards show, custom CSS, theme export/import), saved per account and applied before first paint; English +
+Finnish UI (own typed message module, `fi` must match `en`'s shape; language follows the account; locale-aware
+numbers and dates); PWA (manifest, icons, service worker with an offline shell; API and video never cached);
+Media Session (lock-screen controls, seek, prev/next in list mode); page-wide player hotkeys, Shift+N/P in
+lists and a `?` shortcuts dialog (touch gestures come from the Video.js skin: double-tap seek, tap for
+controls); axe-core pass with zero violations in all four themes (contrast, link names, heading order, nested
+interactive elements, unique dialog ids). The player's own control labels stay English (Video.js 10 has no
+translations yet).
 - Theme editor, layout/density options, PWA, Media Session, keyboard shortcuts, gestures, i18n,
   accessibility pass (keyboard nav, focus, contrast, reduced motion).
 
-**M7 — Extras & release**
+**M7 — Extras & release** — *done 2026-10-25 (branch `m7-release`)*: per-user backup as JSON
+(subscriptions, tags, feeds, lists, progress, hidden videos, settings, plus the channel/video metadata they
+need), restored by merging (idempotent; tags/lists matched by name, feed tag ids remapped, newer progress
+wins); SponsorBlock (per-category auto-skip with undo, skip button, timeline marks, highlight jump) and DeArrow
+(titles, thumbnails through a server proxy), both via hash-prefix lookups through the server with caching and
+switchable per instance; WebSub (opt-in: hub subscriptions with leases and renewal, HMAC-checked callbacks
+that trigger the normal RSS refresh, polling slowed to 6 h for pushed channels); the refresher falls back to the
+channel's Videos tab when RSS fails (YouTube's feeds returned 404 for every channel during testing), so only a
+channel page that is gone marks a channel as deleted; Dockerfile (Debian, server
++ botguard, non-root, `/data` volume) that users build themselves (CI only checks that it builds; no images or
+binaries are published); compose example with Caddy; README, CHANGELOG, LICENSE.
 - Backup export/import, SponsorBlock, DeArrow, WebSub, Docker image (multi-arch), docs, v0.1 release.
 
 Later ideas: comments, related videos/recommendations from subscriptions, downloads (`rustypipe-downloader`),
@@ -421,9 +480,11 @@ YouTube Music mode, Postgres backend, federated/shared instances, Android TV lay
 
 | Risk | Mitigation |
 |---|---|
-| YouTube changes break extraction | Track rustypipe releases closely; isolate in `katsanto-yt`; canary job; Renovate/dependabot |
+| YouTube changes break extraction | Playback uses our own code + yt-dlp's maintained solver (hot-swappable from data dir); everything behind `YoutubeSource`; nightly canary job |
+| rustypipe unmaintained (metadata parsing may rot) | Only used for search/channel/RSS; replace piece by piece with own Innertube parsing when something breaks |
+| YouTube moves TV_SIMPLY to server-side ABR (SABR/UMP) like WEB | Client fallback list; would require implementing SABR (YouTube.js `googlevideo` lib as reference) |
 | Server IP rate-limited/blocked by YouTube | Prefer RSS for polling; adaptive intervals; concurrency limits; caching; optional outbound proxy |
-| PO token / attestation changes | Rely on `rustypipe-botguard`; keep it a separate updatable binary |
+| PO token / attestation changes | Rely on `rustypipe-botguard` (separate updatable binary); BgUtils/Companion as reference if it breaks |
 | Stream URLs IP-bound | Proxy mode with range passthrough |
 | GPL licensing | License the project AGPL-3.0 |
 | Search traffic triggers YouTube rate limits | Debounced suggestions, shared result cache, per-user search rate limit |

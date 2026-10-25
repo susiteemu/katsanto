@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+		<meta name="text-scale" content="scale" />
+		<meta name="color-scheme" content="light dark" />
+		<meta name="theme-color" content="#00878c" />
+		<link rel="manifest" href="/manifest.webmanifest" />
+		<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+		<title>Katsanto</title>
+		<script>
+			// Apply the saved language and appearance before first paint to avoid a flash
+			// (written by src/lib/appearance.svelte.ts).
+			try {
+				const root = document.documentElement;
+				const lang = localStorage.getItem('katsanto.lang');
+				if (lang === 'fi' || (!lang && navigator.language.toLowerCase().startsWith('fi')))
+					root.lang = 'fi';
+				const a = JSON.parse(localStorage.getItem('katsanto.appearance') || '{}');
+				if (a.theme && a.theme !== 'system') root.dataset.theme = a.theme;
+				for (const [k, v] of Object.entries(a.vars || {})) root.style.setProperty(k, v);
+				if (a.css) {
+					const style = document.createElement('style');
+					style.id = 'katsanto-custom-css';
+					style.textContent = a.css;
+					document.head.append(style);
+				}
+			} catch {}
+		</script>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>

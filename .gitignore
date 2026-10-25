@@ -8,3 +8,5 @@ node_modules
 /web/build
 /web/.svelte-kit
 .env
+/katsanto.toml
+/web/data
