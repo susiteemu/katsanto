@@ -21,6 +21,9 @@ New look.
 
 Fixes.
 
+- The server is rebuilt when the web app changes. Previously a server built before
+  `npm run build` kept answering "The web app is not built" even after the web app was
+  built, until its code changed.
 - "⋮" menus are no longer cut off inside scrolling rows such as Continue watching, and open
   upwards when there's no room below.
 

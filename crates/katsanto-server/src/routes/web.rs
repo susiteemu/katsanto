@@ -34,7 +34,8 @@ pub async fn serve(uri: Uri) -> Response {
     file("index.html").unwrap_or_else(|| {
         (
             StatusCode::SERVICE_UNAVAILABLE,
-            "The web app is not built. Run `npm run build` in web/ (or use the Vite dev server).",
+            "The web app is not built into this server. Run `npm run build` in web/, then rebuild \
+             the server (or use the Vite dev server).",
         )
             .into_response()
     })
