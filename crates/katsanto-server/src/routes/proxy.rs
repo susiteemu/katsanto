@@ -169,13 +169,24 @@ pub async fn image(State(st): State<AppState>, Query(q): Query<ImageQuery>) -> A
         return Err(AppError::BadRequest("host not allowed".into()));
     }
 
-    let upstream = st
-        .http
-        .get(url)
-        .send()
-        .await
-        .map_err(|e| AppError::Upstream(e.to_string()))?;
-    let status = upstream.status();
+    let fallback = fallback_thumbnail(&url);
+    let get = |url: url::Url| async {
+        st.http
+            .get(url)
+            .send()
+            .await
+            .map_err(|e| AppError::Upstream(e.to_string()))
+    };
+    let mut upstream = get(url).await?;
+    let mut status = upstream.status();
+    // Signed custom thumbnails (`hq720_custom_2.jpg?sqp=…`) stop working once the
+    // creator changes the thumbnail, but the stored URL still points at them.
+    if status == StatusCode::NOT_FOUND
+        && let Some(fallback) = fallback
+    {
+        upstream = get(fallback).await?;
+        status = upstream.status();
+    }
     if !status.is_success() {
         return Err(if status == StatusCode::NOT_FOUND {
             AppError::NotFound("image".into())
@@ -185,6 +196,26 @@ pub async fn image(State(st): State<AppState>, Query(q): Query<ImageQuery>) -> A
     }
 
     image_response(upstream)
+}
+
+/// The always-present `hqdefault.jpg` of a video thumbnail URL other than that one.
+fn fallback_thumbnail(url: &url::Url) -> Option<url::Url> {
+    let mut segments = url.path_segments()?;
+    let (Some(kind), Some(id), Some(file), None) = (
+        segments.next(),
+        segments.next(),
+        segments.next(),
+        segments.next(),
+    ) else {
+        return None;
+    };
+    if !matches!(kind, "vi" | "vi_webp")
+        || !is_video_id(id)
+        || (file == "hqdefault.jpg" && url.query().is_none())
+    {
+        return None;
+    }
+    url::Url::parse(&format!("https://i.ytimg.com/vi/{id}/hqdefault.jpg")).ok()
 }
 
 /// Pass an upstream image through. It is served from our own origin, so only raster
@@ -287,6 +318,25 @@ mod tests {
         assert!(!is_image_host("ix.ytimg.com"));
         assert!(!is_image_host("i.ytimg.com.evil.example"));
         assert!(!is_image_host("evil.example"));
+    }
+
+    #[test]
+    fn thumbnail_fallback() {
+        let fallback = |u: &str| fallback_thumbnail(&url::Url::parse(u).unwrap()).map(String::from);
+        assert_eq!(
+            fallback("https://i.ytimg.com/vi/J8-KyvQSvew/hq720_custom_2.jpg?sqp=x&rs=y").as_deref(),
+            Some("https://i.ytimg.com/vi/J8-KyvQSvew/hqdefault.jpg")
+        );
+        assert_eq!(
+            fallback("https://i4.ytimg.com/vi/J8-KyvQSvew/maxresdefault.jpg").as_deref(),
+            Some("https://i.ytimg.com/vi/J8-KyvQSvew/hqdefault.jpg")
+        );
+        assert_eq!(
+            fallback("https://i.ytimg.com/vi/J8-KyvQSvew/hqdefault.jpg"),
+            None
+        );
+        assert_eq!(fallback("https://yt3.ggpht.com/abc=s88"), None);
+        assert_eq!(fallback("https://i.ytimg.com/vi/../hq.jpg"), None);
     }
 
     #[test]
