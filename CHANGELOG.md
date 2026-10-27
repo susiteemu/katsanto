@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+Subtitles.
+
+- Subtitles no longer hug the left edge: a new Subtitles card in settings places them bottom
+  left, center (the default) or right, with a small margin.
+- Preferred subtitle languages are listed first in the player's menu, and languages written
+  in non-Latin scripts can be hidden.
+
 Security fixes.
 
 - Adding a passkey, and admin changes to users and instance settings, now need a recent

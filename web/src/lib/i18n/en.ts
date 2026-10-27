@@ -558,6 +558,19 @@ export const en = {
 		dearrowThumbnails: 'Better thumbnails',
 		originalTitle: (title: string) => `Original title: ${title}`,
 		off: 'Turned off on this server.'
+	},
+	subtitles: {
+		title: 'Subtitles',
+		hint: 'How subtitles are placed and which languages the player offers first.',
+		position: 'Position',
+		positions: { left: 'Bottom left', center: 'Bottom center', right: 'Bottom right' },
+		preferred: 'Preferred languages',
+		preferredHint: 'Listed first in the player’s subtitle menu, in this order.',
+		addLanguage: 'Add a language…',
+		removeLanguage: (name: string) => `Remove ${name}`,
+		moveUp: (name: string) => `Move ${name} up`,
+		latinOnly: 'Hide languages written in non-Latin scripts (such as Chinese, Arabic or Cyrillic)',
+		latinOnlyHint: 'Preferred languages are always shown.'
 	}
 };
 

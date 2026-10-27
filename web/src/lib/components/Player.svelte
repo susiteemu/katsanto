@@ -7,6 +7,7 @@
 	import type { Schemas } from '#lib/api/client.js';
 	import type { Category, SegmentAction } from '#lib/community.svelte.js';
 	import { trackProgress, type MediaLike } from '#lib/progress.js';
+	import { placeCue, type SubtitlePosition } from '#lib/subtitles.svelte.js';
 	import SegmentSkipper from './SegmentSkipper.svelte';
 
 	/**
@@ -50,6 +51,7 @@
 		/** SponsorBlock segments and what to do with each category. */
 		segments?: Schemas['Segment'][];
 		segmentActions?: Record<Category, SegmentAction>;
+		subtitlePosition?: SubtitlePosition;
 	}
 
 	let {
@@ -67,7 +69,8 @@
 		onnext,
 		onprevious,
 		segments = [],
-		segmentActions
+		segmentActions,
+		subtitlePosition = 'center'
 	}: Props = $props();
 
 	let skinEl = $state<HTMLElement>();
@@ -86,7 +89,7 @@
 	});
 
 	/** The `<dash-video>` element: a media element as far as Katsanto is concerned. */
-	type Media = MediaLike & Pick<HTMLMediaElement, 'pause' | 'playbackRate'>;
+	type Media = MediaLike & Pick<HTMLMediaElement, 'pause' | 'playbackRate' | 'textTracks'>;
 	let media: Media;
 
 	/** Jump to a time (description timestamps, chapters) and keep playing. */
@@ -111,6 +114,34 @@
 		const url = chaptersUrl;
 		return () => {
 			if (url) URL.revokeObjectURL(url);
+		};
+	});
+
+	/**
+	 * Place subtitle cues. The browser renders them (inside dash-video's shadow DOM, out of
+	 * reach of ::cue), so their cue settings are rewritten as each track's cues arrive.
+	 */
+	$effect(() => {
+		const position = subtitlePosition;
+		const tracks = media.textTracks;
+		const placed = new WeakMap<TextTrack, number>();
+		const place = (track: TextTrack) => {
+			const cues = track.cues;
+			if (!cues || placed.get(track) === cues.length) return;
+			placed.set(track, cues.length);
+			for (const cue of cues) if (cue instanceof VTTCue) placeCue(cue, position);
+		};
+		const onCueChange = (e: Event) => place(e.target as TextTrack);
+		const watch = (track: TextTrack) => {
+			track.addEventListener('cuechange', onCueChange);
+			place(track);
+		};
+		const onAddTrack = (e: TrackEvent) => watch(e.track as TextTrack);
+		for (const track of tracks) watch(track);
+		tracks.addEventListener('addtrack', onAddTrack);
+		return () => {
+			tracks.removeEventListener('addtrack', onAddTrack);
+			for (const track of tracks) track.removeEventListener('cuechange', onCueChange);
 		};
 	});
 
