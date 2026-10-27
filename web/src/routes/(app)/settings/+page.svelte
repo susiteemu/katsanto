@@ -15,6 +15,7 @@
 	import Field from '#lib/components/Field.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import RecoveryCodes from '#lib/components/RecoveryCodes.svelte';
+	import SubtitleSettings from '#lib/components/SubtitleSettings.svelte';
 	import ReauthDialog, { withReauth } from '#lib/components/ReauthDialog.svelte';
 
 	let config = $state<Schemas['AuthConfig'] | null>(null);
@@ -251,6 +252,8 @@
 	</Card>
 
 	<AppearanceSettings />
+
+	<SubtitleSettings />
 
 	<CommunitySettings />
 

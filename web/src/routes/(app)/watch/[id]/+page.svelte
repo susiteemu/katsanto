@@ -9,6 +9,7 @@
 	import Player from '#lib/components/Player.svelte';
 	import { branded } from '#lib/branding.svelte.js';
 	import { communitySettings } from '#lib/community.svelte.js';
+	import { arrangeCaptions, subtitleSettings } from '#lib/subtitles.svelte.js';
 	import SubscribeButton from '#lib/components/SubscribeButton.svelte';
 	import VideoCard from '#lib/components/VideoCard.svelte';
 	import { goto } from '$app/navigation';
@@ -29,6 +30,7 @@
 	let player = $state<ReturnType<typeof Player>>();
 	let segments = $state<Schemas['Segment'][]>([]);
 	const community = $derived(communitySettings());
+	const subtitles = $derived(subtitleSettings());
 
 	// ---- Play-list mode (`?list=<id>[&shuffle=1]`) ----
 	const listId = $derived(Number(page.url.searchParams.get('list')) || null);
@@ -211,7 +213,8 @@
 					title={video.details.title}
 					channel={video.details.channel.name}
 					poster={video.details.thumbnail_url}
-					captions={video.captions}
+					captions={arrangeCaptions(video.captions, subtitles)}
+					subtitlePosition={subtitles.position}
 					chapters={info?.chapters ?? []}
 					duration={video.details.duration_s}
 					{startAt}

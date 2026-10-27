@@ -3,6 +3,9 @@
   "info": {
     "title": "Katsanto API",
     "description": "Katsanto's REST API, used by its web app.",
+    "contact": {
+      "name": "Teemu Turunen"
+    },
     "license": {
       "name": "AGPL-3.0-only",
       "identifier": "AGPL-3.0-only"

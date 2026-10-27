@@ -566,5 +566,23 @@ export const fi: Messages = {
 		dearrowThumbnails: 'Paremmat pikkukuvat',
 		originalTitle: (title: string) => `Alkuperäinen otsikko: ${title}`,
 		off: 'Poistettu käytöstä tällä palvelimella.'
+	},
+	subtitles: {
+		title: 'Tekstitykset',
+		hint: 'Tekstitysten sijainti ja kielet, joita soitin tarjoaa ensimmäisinä.',
+		position: 'Sijainti',
+		positions: {
+			left: 'Alhaalla vasemmalla',
+			center: 'Alhaalla keskellä',
+			right: 'Alhaalla oikealla'
+		},
+		preferred: 'Suosikkikielet',
+		preferredHint: 'Näytetään soittimen tekstitysvalikossa ensimmäisinä tässä järjestyksessä.',
+		addLanguage: 'Lisää kieli…',
+		removeLanguage: (name: string) => `Poista ${name}`,
+		moveUp: (name: string) => `Siirrä ${name} ylemmäs`,
+		latinOnly:
+			'Piilota kielet, joita ei kirjoiteta latinalaisin aakkosin (esim. kiina, arabia, kyrillinen)',
+		latinOnlyHint: 'Suosikkikielet näytetään aina.'
 	}
 };
