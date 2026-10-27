@@ -7,4 +7,4 @@ edition = "2024"
 license = "AGPL-3.0-only"
 authors = ["Teemu Turunen"]
 repository = "https://github.com/susiteemu/katsanto"
-version = "0.1.0"
+version = "1.0.0"
