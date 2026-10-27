@@ -1,6 +1,18 @@
 # Changelog
 
-## Unreleased
+## 1.1.0
+
+- Share a video's YouTube link: a "Share YouTube link" button on the watch page opens the
+  system share sheet or copies the link, and video card menus have "Copy YouTube link".
+- Videos can be removed from Continue watching through their "⋮" menu, which also works on
+  touch screens; the remove button there only showed on hover.
+
+Fixes.
+
+- Thumbnails no longer fail to load after a creator changes a video's custom thumbnail: the
+  image proxy falls back to the video's standard thumbnail.
+
+## 1.0.0
 
 Subtitles.
 
