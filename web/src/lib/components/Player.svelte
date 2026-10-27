@@ -89,7 +89,12 @@
 	});
 
 	/** The `<dash-video>` element: a media element as far as Katsanto is concerned. */
-	type Media = MediaLike & Pick<HTMLMediaElement, 'pause' | 'playbackRate' | 'textTracks'>;
+	type Media = MediaLike &
+		Pick<HTMLMediaElement, 'pause' | 'playbackRate' | 'textTracks'> & {
+			// Safari's video presentation modes; the only fullscreen on iPhone.
+			webkitPresentationMode?: string;
+			webkitSetPresentationMode?: (mode: 'inline' | 'fullscreen') => void;
+		};
 	let media: Media;
 
 	/** Jump to a time (description timestamps, chapters) and keep playing. */
@@ -232,12 +237,25 @@
 		if (media.readyState >= 1) resume();
 		else media.addEventListener('loadedmetadata', resume, { once: true });
 
+		// Turning a phone to landscape while watching enters fullscreen. Turning back doesn't
+		// leave it: that is the fullscreen button's job.
+		const landscape = matchMedia('(orientation: landscape) and (pointer: coarse)');
+		const onLandscape = () => {
+			if (!landscape.matches || media.paused || document.fullscreenElement) return;
+			// iPhone Safari has no element fullscreen, only the video's own presentation mode.
+			if (document.fullscreenEnabled) void skinEl?.requestFullscreen().catch(() => {});
+			else if (media.webkitPresentationMode === 'inline')
+				media.webkitSetPresentationMode?.('fullscreen');
+		};
+		landscape.addEventListener('change', onLandscape);
+
 		const stopSession = mediaSession();
 		const stop = trackProgress(media, videoId);
 		const ended = () => onended?.();
 		media.addEventListener('ended', ended);
 		return () => {
 			stop();
+			landscape.removeEventListener('change', onLandscape);
 			stopSession();
 			media.removeEventListener('ended', ended);
 			media.removeEventListener('loadedmetadata', resume);
