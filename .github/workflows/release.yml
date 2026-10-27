@@ -1,0 +1,60 @@
+name: Release
+
+# Publishes a GitHub release when main gets a version in Cargo.toml that has no
+# tag yet. Merging a PR without a version bump releases nothing.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Is this version new?
+        id: version
+        run: |
+          version=$(cargo pkgid -p katsanto-server | sed 's/.*[#@]//')
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags origin "refs/tags/v$version" >/dev/null; then
+            echo "new=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "new=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: dtolnay/rust-toolchain@stable
+        if: steps.version.outputs.new == 'true'
+      - uses: Swatinem/rust-cache@v2
+        if: steps.version.outputs.new == 'true'
+      - uses: actions/setup-node@v4
+        if: steps.version.outputs.new == 'true'
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Build
+        if: steps.version.outputs.new == 'true'
+        run: make build
+      - name: Package
+        if: steps.version.outputs.new == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          name="katsanto-$VERSION-linux-x86_64"
+          tar -czf "$name.tar.gz" -C target/release katsanto-server --transform "s|^|$name/|"
+          # Release notes: the CHANGELOG section for this version, else "Unreleased".
+          for heading in "$VERSION" Unreleased; do
+            awk -v h="## $heading" '$0 == h {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
+            [ -s notes.md ] && break
+          done
+      - name: Publish
+        if: steps.version.outputs.new == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          gh release create "v$VERSION" "katsanto-$VERSION-linux-x86_64.tar.gz" \
+            --target "$GITHUB_SHA" --title "v$VERSION" --notes-file notes.md
