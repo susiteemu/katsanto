@@ -35,6 +35,8 @@ audit: test
 	cargo clippy --workspace --all-targets -- -D warnings
 	cargo audit
 	cd web && npm run lint && npm run check
+	cargo run -q -p katsanto-server -- openapi | diff -u web/src/lib/api/openapi.json - || \
+		{ echo "Run 'make api' to regenerate the API client"; exit 1; }
 
 ## test: run all tests
 .PHONY: test
@@ -52,6 +54,11 @@ test:
 tidy:
 	cargo fmt --all
 	cd web && npm run format
+
+## api: regenerate the web API client from the server's OpenAPI spec
+.PHONY: api
+api:
+	cd web && npm run api
 
 ## tag: tag HEAD with the version in Cargo.toml
 .PHONY: tag
