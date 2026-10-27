@@ -7,6 +7,7 @@
 	import { saveToList } from '#lib/saveToList.svelte.js';
 	import { appearance } from '#lib/appearance.svelte.js';
 	import { branded } from '#lib/branding.svelte.js';
+	import { copyYouTubeLink } from '#lib/share.js';
 	import Menu from './Menu.svelte';
 	import { gridLayout } from './VideoGrid.svelte';
 
@@ -163,6 +164,8 @@
 				>
 				<button role="menuitem" onclick={() => saveToList.open(video.id, video.title)}
 					>{m.video.saveToList}</button
+				>
+				<button role="menuitem" onclick={() => copyYouTubeLink(video.id)}>{m.video.copyLink}</button
 				>
 				{#if onhide}
 					{#if progress}

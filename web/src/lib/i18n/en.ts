@@ -107,7 +107,8 @@ export const en = {
 		saveToList: 'Save to list…',
 		markUnwatched: 'Mark as unwatched',
 		markWatched: 'Mark as watched',
-		hide: 'Hide from feeds'
+		hide: 'Hide from feeds',
+		copyLink: 'Copy YouTube link'
 	},
 	channel: {
 		subscribers: (n: string) => `${n} subscribers`,
@@ -212,10 +213,15 @@ export const en = {
 		sections: 'Channel sections',
 		empty: 'No videos here.'
 	},
+	share: {
+		copyPrompt: 'Copy the YouTube link:'
+	},
 	watch: {
 		resumedAt: (t: string) => `Resumed at ${t}`,
 		startOver: 'Start over',
 		save: 'Save',
+		share: 'Share YouTube link',
+		linkCopied: 'YouTube link copied',
 		likes: (n: string) => `${n} likes`,
 		showLess: 'Show less',
 		showMore: 'Show more',

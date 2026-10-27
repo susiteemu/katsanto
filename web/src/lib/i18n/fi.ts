@@ -106,7 +106,8 @@ export const fi: Messages = {
 		saveToList: 'Tallenna listaan…',
 		markUnwatched: 'Merkitse katsomattomaksi',
 		markWatched: 'Merkitse katsotuksi',
-		hide: 'Piilota syötteistä'
+		hide: 'Piilota syötteistä',
+		copyLink: 'Kopioi YouTube-linkki'
 	},
 	channel: {
 		subscribers: (n: string) => `${n} tilaajaa`,
@@ -211,10 +212,15 @@ export const fi: Messages = {
 		sections: 'Kanavan osiot',
 		empty: 'Täällä ei ole videoita.'
 	},
+	share: {
+		copyPrompt: 'Kopioi YouTube-linkki:'
+	},
 	watch: {
 		resumedAt: (t: string) => `Jatkettiin kohdasta ${t}`,
 		startOver: 'Alusta',
 		save: 'Tallenna',
+		share: 'Jaa YouTube-linkki',
+		linkCopied: 'YouTube-linkki kopioitu',
 		likes: (n: string) => `${n} tykkäystä`,
 		showLess: 'Näytä vähemmän',
 		showMore: 'Näytä lisää',
