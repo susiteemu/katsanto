@@ -157,6 +157,7 @@ export const en = {
 		newFeed: 'New feed',
 		manage: 'Manage',
 		continueWatching: 'Continue watching',
+		removeFromContinue: 'Remove from Continue watching',
 		removeContinue: (title: string) => `Remove ${title} from Continue watching`,
 		allSubscriptions: 'All subscriptions',
 		editFeed: 'Edit feed',

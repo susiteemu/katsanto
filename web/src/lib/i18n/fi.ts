@@ -156,6 +156,7 @@ export const fi: Messages = {
 		newFeed: 'Uusi syöte',
 		manage: 'Hallitse',
 		continueWatching: 'Jatka katsomista',
+		removeFromContinue: 'Poista Jatka katsomista -rivistä',
 		removeContinue: (title: string) => `Poista ${title} Jatka katsomista -rivistä`,
 		allSubscriptions: 'Kaikki tilaukset',
 		editFeed: 'Muokkaa syötettä',

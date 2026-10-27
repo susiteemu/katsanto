@@ -192,7 +192,13 @@
 								finished: false,
 								updated_at: item.updated_at
 							}}
-						/>
+						>
+							{#snippet menuItems()}
+								<button role="menuitem" onclick={() => removeContinue(item.video.id)}
+									>{m.home.removeFromContinue}</button
+								>
+							{/snippet}
+						</VideoCard>
 						<button
 							class="absolute top-2 right-2 rounded-full bg-black/70 p-1.5 text-white opacity-0 transition group-hover/item:opacity-100 focus:opacity-100"
 							onclick={() => removeContinue(item.video.id)}
