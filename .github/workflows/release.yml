@@ -18,7 +18,7 @@ jobs:
       - name: Is this version new?
         id: version
         run: |
-          version=$(cargo pkgid -p katsanto-server | sed 's/.*[#@]//')
+          version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "katsanto-server") | .version')
           echo "version=$version" >> "$GITHUB_OUTPUT"
           if git ls-remote --exit-code --tags origin "refs/tags/v$version" >/dev/null; then
             echo "new=false" >> "$GITHUB_OUTPUT"
