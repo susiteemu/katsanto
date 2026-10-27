@@ -1,4 +1,5 @@
 <script lang="ts">
+	import type { Snippet } from 'svelte';
 	import { m } from '#lib/i18n/index.js';
 	import type { Schemas } from '#lib/api/client.js';
 	import { ago, compact, duration, watchedFraction } from '#lib/format.js';
@@ -7,6 +8,7 @@
 	import { saveToList } from '#lib/saveToList.svelte.js';
 	import { appearance } from '#lib/appearance.svelte.js';
 	import { branded } from '#lib/branding.svelte.js';
+	import { copyYouTubeLink } from '#lib/share.js';
 	import Menu from './Menu.svelte';
 	import { gridLayout } from './VideoGrid.svelte';
 
@@ -19,6 +21,8 @@
 		showChannel?: boolean;
 		/** Show the actions menu; called after "Hide" so the list can drop the card. */
 		onhide?: (id: string) => void;
+		/** Extra items at the top of the actions menu. */
+		menuItems?: Snippet;
 	}
 
 	let {
@@ -26,7 +30,8 @@
 		progress = $bindable(null),
 		layout: layoutProp,
 		showChannel = true,
-		onhide
+		onhide,
+		menuItems
 	}: Props = $props();
 
 	async function act(fn: () => Promise<unknown>) {
@@ -158,11 +163,14 @@
 		</div>
 		<div class="-mr-2 ml-auto shrink-0">
 			<Menu label={m.video.actions(b.title)}>
+				{@render menuItems?.()}
 				<button role="menuitem" onclick={watchLater} disabled={savedLater}
 					>{savedLater ? m.video.savedLater : m.video.saveLater}</button
 				>
 				<button role="menuitem" onclick={() => saveToList.open(video.id, video.title)}
 					>{m.video.saveToList}</button
+				>
+				<button role="menuitem" onclick={() => copyYouTubeLink(video.id)}>{m.video.copyLink}</button
 				>
 				{#if onhide}
 					{#if progress}

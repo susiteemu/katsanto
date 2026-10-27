@@ -14,6 +14,7 @@
 	import VideoCard from '#lib/components/VideoCard.svelte';
 	import { goto } from '$app/navigation';
 	import { saveToList } from '#lib/saveToList.svelte.js';
+	import { shareYouTubeLink } from '#lib/share.js';
 
 	/** Resume only when meaningfully into the video. */
 	const MIN_RESUME_S = 30;
@@ -27,6 +28,7 @@
 	let resumed = $state(false);
 	let error = $state('');
 	let expanded = $state(false);
+	let copied = $state(false);
 	let player = $state<ReturnType<typeof Player>>();
 	let segments = $state<Schemas['Segment'][]>([]);
 	const community = $derived(communitySettings());
@@ -155,6 +157,7 @@
 		info = null;
 		error = '';
 		expanded = false;
+		copied = false;
 		resumed = false;
 		window.scrollTo({ top: 0 });
 		const infoReq = unwrap(
@@ -273,6 +276,11 @@
 						<button
 							class="h-9 shrink-0 rounded-full bg-surface-2 px-4 text-sm font-medium hover:bg-border"
 							onclick={() => saveToList.open(id, title)}>{m.watch.save}</button
+						>
+						<button
+							class="h-9 shrink-0 rounded-full bg-surface-2 px-4 text-sm font-medium hover:bg-border"
+							onclick={async () => (copied = await shareYouTubeLink(id, title))}
+							>{copied ? m.watch.linkCopied : m.watch.share}</button
 						>
 					{/if}
 				</div>
