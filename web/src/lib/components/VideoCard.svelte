@@ -19,6 +19,11 @@
 		layout?: 'grid' | 'list';
 		/** Hide the channel name (on the channel's own page). */
 		showChannel?: boolean;
+		/**
+		 * Show the view count. Only search results have a current one; elsewhere it is
+		 * stored from the channel's feed and goes stale.
+		 */
+		showViews?: boolean;
 		/** Show the actions menu; called after "Hide" so the list can drop the card. */
 		onhide?: (id: string) => void;
 		/** Extra items at the top of the actions menu. */
@@ -30,6 +35,7 @@
 		progress = $bindable(null),
 		layout: layoutProp,
 		showChannel = true,
+		showViews = false,
 		onhide,
 		menuItems
 	}: Props = $props();
@@ -83,7 +89,9 @@
 	const watched = $derived(watchedFraction(progress));
 	const meta = $derived(
 		[
-			show.views && video.view_count != null ? m.common.views(compact(video.view_count)) : null,
+			showViews && show.views && video.view_count != null
+				? m.common.views(compact(video.view_count))
+				: null,
 			show.dates ? (video.published_text ?? ago(video.published_at)) : null
 		]
 			.filter(Boolean)
