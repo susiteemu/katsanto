@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.1.1
+
+- View counts are only shown in search results. Elsewhere they came from the channel's
+  feed, which only lists the newest uploads, so they were often out of date.
+
 ## 1.1.0
 
 - Share a video's YouTube link: a "Share YouTube link" button on the watch page opens the

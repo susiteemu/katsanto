@@ -161,7 +161,7 @@
 	<VideoGrid>
 		{#each visible as item (item.id)}
 			{#if item.type === 'video'}
-				<VideoCard video={item} progress={progress.get(item.id)} />
+				<VideoCard video={item} progress={progress.get(item.id)} showViews />
 			{:else}
 				<ChannelCard channel={item} />
 			{/if}
