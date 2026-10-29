@@ -380,7 +380,7 @@
 								{/if}
 							</div>
 							<div class="min-w-0 text-sm">
-								<p class="line-clamp-2 font-medium">{item.video.title}</p>
+								<p class="line-clamp-2 font-medium" title={item.video.title}>{item.video.title}</p>
 								<p class="truncate text-muted">{item.video.channel?.name}</p>
 							</div>
 						</a>
