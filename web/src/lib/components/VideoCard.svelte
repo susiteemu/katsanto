@@ -158,7 +158,8 @@
 				<a
 					href="/watch/{video.id}"
 					class="hover:underline"
-					title={b.original ? m.community.originalTitle(b.original) : undefined}>{b.title}</a
+					title={b.original ? `${b.title}\n${m.community.originalTitle(b.original)}` : b.title}
+					>{b.title}</a
 				>
 			</h3>
 			{#if showChannel && video.channel}
