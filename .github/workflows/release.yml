@@ -1,7 +1,8 @@
 name: Release
 
-# Publishes a GitHub release when main gets a version in Cargo.toml that has no
-# tag yet. Merging a PR without a version bump releases nothing.
+# release-please keeps a release PR open that bumps the version and updates
+# CHANGELOG.md from the Conventional Commits merged to main. Merging that PR
+# tags v<version>, publishes the GitHub release and attaches the binary.
 
 on:
   push:
@@ -9,52 +10,46 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
-  release:
+  release-please:
+    runs-on: ubuntu-24.04
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      version: ${{ steps.release.outputs.version }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          # PRs opened with the default GITHUB_TOKEN don't trigger CI; a PAT in
+          # RELEASE_PLEASE_TOKEN makes CI run on the release PR.
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  build:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - name: Is this version new?
-        id: version
-        run: |
-          version=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "katsanto-server") | .version')
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          if git ls-remote --exit-code --tags origin "refs/tags/v$version" >/dev/null; then
-            echo "new=false" >> "$GITHUB_OUTPUT"
-          else
-            echo "new=true" >> "$GITHUB_OUTPUT"
-          fi
       - uses: dtolnay/rust-toolchain@stable
-        if: steps.version.outputs.new == 'true'
       - uses: Swatinem/rust-cache@v2
-        if: steps.version.outputs.new == 'true'
       - uses: actions/setup-node@v4
-        if: steps.version.outputs.new == 'true'
         with:
           node-version: 24
           cache: npm
           cache-dependency-path: web/package-lock.json
       - name: Build
-        if: steps.version.outputs.new == 'true'
         run: make build
-      - name: Package
-        if: steps.version.outputs.new == 'true'
+      - name: Package and upload
         env:
-          VERSION: ${{ steps.version.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.release-please.outputs.version }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
           name="katsanto-$VERSION-linux-x86_64"
           tar -czf "$name.tar.gz" -C target/release katsanto-server --transform "s|^|$name/|"
-          # Release notes: the CHANGELOG section for this version, else "Unreleased".
-          for heading in "$VERSION" Unreleased; do
-            awk -v h="## $heading" '$0 == h {on=1; next} /^## / {on=0} on' CHANGELOG.md > notes.md
-            [ -s notes.md ] && break
-          done
-      - name: Publish
-        if: steps.version.outputs.new == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ steps.version.outputs.version }}
-        run: |
-          gh release create "v$VERSION" "katsanto-$VERSION-linux-x86_64.tar.gz" \
-            --target "$GITHUB_SHA" --title "v$VERSION" --notes-file notes.md
+          gh release upload "$TAG" "$name.tar.gz"

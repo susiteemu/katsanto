@@ -197,20 +197,19 @@ media proxy, SponsorBlock/DeArrow, WebSub, embedded web app), `web/` (SvelteKit 
 
 ### Releasing
 
-A push to `main` publishes a GitHub release when the version in `Cargo.toml` has no `v<version>`
-tag yet; without a version bump nothing is released. To release:
+Releases are automated with [release-please](https://github.com/googleapis/release-please), so
+commit messages (or PR titles, when squash merging) must follow
+[Conventional Commits](https://www.conventionalcommits.org/):
 
-1. Set `version` under `[workspace.package]` in `Cargo.toml`. If the major or minor part changes,
-   update the `version = "…"` requirements on the `katsanto-db` and `katsanto-yt` dependencies in
-   `crates/katsanto-server/Cargo.toml` too.
-2. `cargo update --workspace` to refresh `Cargo.lock`.
-3. `cd web && npm run api` — the OpenAPI spec embeds the version, and CI fails if it is stale.
-4. In `CHANGELOG.md`, rename `## Unreleased` to `## <version>`; that section becomes the release notes.
-5. Merge to `main` through a PR, and wait for CI to pass first: the release workflow does not wait
-   for CI. It builds the binary, tags `v<version>` and attaches `katsanto-<version>-linux-x86_64.tar.gz`.
+- `fix: …` bumps the patch version, `feat: …` the minor version, and `feat!: …` or a
+  `BREAKING CHANGE:` footer the major version.
+- `chore:`, `docs:`, `refactor:`, `test:`, `ci:` and the like release nothing on their own.
 
-`make tag` and `make atomic-push` can create and push the same `v<version>` tag by hand, but pushing
-the tag before the version bump is on `main` makes the workflow skip the release.
+On every push to `main`, release-please opens or updates a release PR that bumps the version in
+`Cargo.toml`, `Cargo.lock`, the internal dependency requirements in
+`crates/katsanto-server/Cargo.toml` and the OpenAPI spec, and adds the new section to
+`CHANGELOG.md`. Edit the changelog in that PR if needed. Merging it tags `v<version>`, publishes the
+GitHub release and attaches `katsanto-<version>-linux-x86_64.tar.gz`.
 
 ## License
 
