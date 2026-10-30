@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.0
+
+- A video's full title is shown when hovering over it in video cards.
+
+Fixes.
+
+- The watch page no longer grows wider than the screen on phones: a long unbreakable link in
+  the description and the player's own size once the video loads could both widen it.
+
 ## 1.1.1
 
 - View counts are only shown in search results. Elsewhere they came from the channel's
