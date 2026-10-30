@@ -94,7 +94,8 @@ export const en = {
 		searchPlaceholder: 'Search or paste a YouTube link',
 		searchLabel: 'Search YouTube',
 		loadMore: 'Load more',
-		loadingMore: 'Loading more'
+		loadingMore: 'Loading more',
+		refreshing: 'Refreshing'
 	},
 	video: {
 		live: 'LIVE',
