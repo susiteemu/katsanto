@@ -1,5 +1,18 @@
 # Changelog
 
+## [1.3.0](https://github.com/susiteemu/katsanto/compare/v1.2.0...v1.3.0) (2026-10-30)
+
+
+### Features
+
+* pull down at the top of Home to refresh it in the installed app ([48ea1b7](https://github.com/susiteemu/katsanto/commit/48ea1b703b99a09e26add20acf446c245070c956))
+* pull down at the top of Home to refresh it in the installed app ([db8a915](https://github.com/susiteemu/katsanto/commit/db8a915c792c021c9e7759f220e3bb5ca5d78eba))
+
+
+### Bug Fixes
+
+* open the new version after a deploy without force-quitting the installed app ([e2adb4d](https://github.com/susiteemu/katsanto/commit/e2adb4d625bb592bb5d2f80ab117d9005f219c43))
+
 ## 1.2.0
 
 - A video's full title is shown when hovering over it in video cards.
