@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { m } from '#lib/i18n/index.js';
 	import { goto } from '$app/navigation';
-	import { page } from '$app/state';
+	import { page, updated } from '$app/state';
 	import { onMount } from 'svelte';
 	import { api, errorMessage, unwrap, type Schemas } from '#lib/api/client.js';
 	import { subscriptions } from '#lib/subscriptions.svelte.js';
 	import Alert from '#lib/components/Alert.svelte';
 	import Icon from '#lib/components/Icon.svelte';
 	import LoadMore from '#lib/components/LoadMore.svelte';
+	import PullToRefresh from '#lib/components/PullToRefresh.svelte';
 	import VideoCard from '#lib/components/VideoCard.svelte';
 	import VideoGrid from '#lib/components/VideoGrid.svelte';
 
@@ -75,10 +76,7 @@
 
 	onMount(() => {
 		void subscriptions.load();
-		void unwrap(api.GET('/api/v1/feeds')).then((f) => (feeds = f));
-		void unwrap(api.GET('/api/v1/continue-watching', { params: { query: { limit: 12 } } })).then(
-			(c) => (continueItems = c)
-		);
+		void loadExtras();
 
 		const events = new EventSource('/api/v1/events');
 		events.addEventListener('feed', (e) => {
@@ -128,6 +126,22 @@
 		}
 	}
 
+	/** The feed chips and Continue watching. */
+	function loadExtras() {
+		return Promise.allSettled([
+			unwrap(api.GET('/api/v1/feeds')).then((f) => (feeds = f)),
+			unwrap(api.GET('/api/v1/continue-watching', { params: { query: { limit: 12 } } })).then(
+				(c) => (continueItems = c)
+			)
+		]);
+	}
+
+	async function refresh() {
+		// A new version was deployed: reloading gets it along with the feed.
+		if (await updated.check()) return location.reload();
+		await Promise.all([load(), loadExtras()]);
+	}
+
 	async function removeContinue(id: string) {
 		continueItems = continueItems.filter((i) => i.video.id !== id);
 		await api.DELETE('/api/v1/progress/{video_id}', { params: { path: { video_id: id } } });
@@ -146,6 +160,8 @@
 </script>
 
 <svelte:head><title>{m.home.title}</title></svelte:head>
+
+<PullToRefresh {refresh} />
 
 <div class="mx-auto flex max-w-[110rem] flex-col gap-6">
 	<h1 class="sr-only">{current?.name ?? m.nav.home}</h1>

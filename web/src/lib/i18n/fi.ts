@@ -93,7 +93,8 @@ export const fi: Messages = {
 		searchPlaceholder: 'Hae tai liitä YouTube-linkki',
 		searchLabel: 'Hae YouTubesta',
 		loadMore: 'Lataa lisää',
-		loadingMore: 'Ladataan lisää'
+		loadingMore: 'Ladataan lisää',
+		refreshing: 'Päivitetään'
 	},
 	video: {
 		live: 'LIVE',
