@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.2](https://github.com/susiteemu/katsanto/compare/v1.3.1...v1.3.2) (2026-10-30)
+
+
+### Bug Fixes
+
+* start pages below the iOS top fade in the installed app ([#17](https://github.com/susiteemu/katsanto/issues/17)) ([2de577b](https://github.com/susiteemu/katsanto/commit/2de577ba8a57dc1d5c05610e64bf6420cce6978c))
+
 ## [1.3.1](https://github.com/susiteemu/katsanto/compare/v1.3.0...v1.3.1) (2026-10-30)
 
 
