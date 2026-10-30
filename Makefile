@@ -1,9 +1,5 @@
 # Change these variables as necessary.
 binary_name := katsanto-server
-# The release tag is "v" plus the version in Cargo.toml, and nothing else.
-app_version := $(shell cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "katsanto-server") | .version')
-app_tag := v$(app_version)
-branch := $(shell git branch --show-current)
 
 # ==================================================================================== #
 # HELPERS
@@ -60,21 +56,6 @@ tidy:
 .PHONY: api
 api:
 	cd web && npm run api
-
-## tag: tag HEAD with the version in Cargo.toml
-.PHONY: tag
-tag: no-dirty
-	@if git rev-parse -q --verify refs/tags/${app_tag} >/dev/null; then \
-		test "$$(git rev-list -n1 ${app_tag})" = "$$(git rev-parse HEAD)" || \
-			{ echo "Tag ${app_tag} is at another commit; bump the version in Cargo.toml"; exit 1; }; \
-	else \
-		git tag ${app_tag} && echo "Tagged ${app_tag}"; \
-	fi
-
-## atomic-push: push the branch together with the tag of the Cargo.toml version
-.PHONY: atomic-push
-atomic-push: tag
-	git push --atomic origin ${branch} ${app_tag}
 
 ## build: build the application to target/release/${binary_name}
 .PHONY: build
