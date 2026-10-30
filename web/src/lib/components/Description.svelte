@@ -12,7 +12,7 @@
 </script>
 
 <!-- Plain text keeps its line breaks; links stay inside Katsanto where possible. -->
-<p class="text-sm break-words whitespace-pre-wrap">
+<p class="text-sm wrap-anywhere whitespace-pre-wrap">
 	{#each parts as part, i (i)}
 		{#if part.type === 'text'}{part.text}{:else if part.type === 'link'}<a
 				href={part.url}
