@@ -299,6 +299,8 @@
 <style>
 	.player {
 		display: block;
+		/* The video's intrinsic size (known once it loads) must not widen the page. */
+		contain: inline-size;
 		/* Follow Katsanto's theme. */
 		--media-accent: var(--accent);
 		--media-border-radius: var(--radius);
