@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1](https://github.com/susiteemu/katsanto/compare/v1.3.0...v1.3.1) (2026-10-30)
+
+
+### Bug Fixes
+
+* show the search bar on Home and keep content clear of the status bar on phones ([#15](https://github.com/susiteemu/katsanto/issues/15)) ([58a8e6f](https://github.com/susiteemu/katsanto/commit/58a8e6f8652dc188d4a52a881fe37f14a15e9c91))
+
 ## [1.3.0](https://github.com/susiteemu/katsanto/compare/v1.2.0...v1.3.0) (2026-10-30)
 
 
