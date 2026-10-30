@@ -9,6 +9,7 @@
 	import Icon from '#lib/components/Icon.svelte';
 	import LoadMore from '#lib/components/LoadMore.svelte';
 	import PullToRefresh from '#lib/components/PullToRefresh.svelte';
+	import SearchBox from '#lib/components/SearchBox.svelte';
 	import VideoCard from '#lib/components/VideoCard.svelte';
 	import VideoGrid from '#lib/components/VideoGrid.svelte';
 
@@ -165,6 +166,8 @@
 
 <div class="mx-auto flex max-w-[110rem] flex-col gap-6">
 	<h1 class="sr-only">{current?.name ?? m.nav.home}</h1>
+	<!-- On desktop the search box is in the layout's header. -->
+	<div class="md:hidden"><SearchBox /></div>
 	<nav class="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 md:mx-0 md:px-0" aria-label={m.home.feeds}>
 		<a
 			href="/"
@@ -276,7 +279,7 @@
 
 		{#if fresh > 0}
 			<button
-				class="sticky top-16 z-10 self-center rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-fg shadow-card"
+				class="sticky top-[calc(4rem+env(safe-area-inset-top))] z-10 self-center rounded-full bg-accent px-4 py-2 text-sm font-medium text-accent-fg shadow-card"
 				onclick={showNew}
 			>
 				{m.home.fresh(fresh)}

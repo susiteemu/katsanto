@@ -64,7 +64,15 @@
 		</div>
 	</nav>
 
-	<main class="min-w-0 flex-1 px-4 pt-4 pb-24 md:px-8 md:pt-0 md:pb-10">
+	<!-- The installed app draws under the phone's status bar: keep content out from under it. -->
+	<div
+		class="fixed inset-x-0 top-0 z-20 h-[env(safe-area-inset-top)] bg-bg md:hidden"
+		aria-hidden="true"
+	></div>
+
+	<main
+		class="min-w-0 flex-1 px-4 pt-[calc(1rem+env(safe-area-inset-top))] pb-24 md:px-8 md:pt-0 md:pb-10"
+	>
 		<header
 			class="sticky top-0 z-10 -mx-8 mb-6 hidden items-center justify-center bg-bg/90 px-8 py-3 backdrop-blur md:flex"
 		>
