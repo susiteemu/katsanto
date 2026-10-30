@@ -455,8 +455,8 @@ switchable per instance; WebSub (opt-in: hub subscriptions with leases and renew
 that trigger the normal RSS refresh, polling slowed to 6 h for pushed channels); the refresher falls back to the
 channel's Videos tab when RSS fails (YouTube's feeds returned 404 for every channel during testing), so only a
 channel page that is gone marks a channel as deleted; Dockerfile (Debian, server
-+ botguard, non-root, `/data` volume) that users build themselves (CI only checks that it builds; no images or
-binaries are published); compose example with Caddy; README, CHANGELOG, LICENSE.
++ botguard, non-root, `/data` volume) that users build themselves (no images are published, and CI doesn't
+build it; releases attach a Linux binary); compose example with Caddy; README, CHANGELOG, LICENSE.
 - Backup export/import, SponsorBlock, DeArrow, WebSub, Docker image (multi-arch), docs, v0.1 release.
 
 Later ideas: comments, related videos/recommendations from subscriptions, downloads (`rustypipe-downloader`),
