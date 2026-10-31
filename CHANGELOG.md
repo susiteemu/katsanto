@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.4](https://github.com/susiteemu/katsanto/compare/v1.3.3...v1.3.4) (2026-10-31)
+
+
+### Bug Fixes
+
+* stop iOS zooming in on form fields ([#21](https://github.com/susiteemu/katsanto/issues/21)) ([4e4e3a0](https://github.com/susiteemu/katsanto/commit/4e4e3a0043b4aab586fea0bcb4c1f01cf5f5a6b8))
+
 ## [1.3.3](https://github.com/susiteemu/katsanto/compare/v1.3.2...v1.3.3) (2026-10-31)
 
 
