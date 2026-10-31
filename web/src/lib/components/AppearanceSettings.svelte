@@ -167,6 +167,19 @@
 			</div>
 		</fieldset>
 
+		<label class="flex items-start gap-2 text-sm">
+			<input
+				type="checkbox"
+				class="mt-0.5 size-4 shrink-0 accent-[var(--accent)]"
+				checked={s.groupChannels}
+				onchange={(e) => set({ groupChannels: e.currentTarget.checked })}
+			/>
+			<span>
+				<span class="block font-medium">{a.groupChannels}</span>
+				<span class="block text-muted">{a.groupChannelsHint}</span>
+			</span>
+		</label>
+
 		<details class="rounded-card border border-border p-4">
 			<summary class="cursor-pointer text-sm font-medium">{a.customCss}</summary>
 			<p class="mt-2 text-sm text-muted">

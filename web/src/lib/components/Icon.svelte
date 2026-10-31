@@ -11,7 +11,8 @@
 		key: 'M15 7a4 4 0 1 1-3.9 5H3v3h3v3h3v-3h2.1A4 4 0 0 1 15 7zm1 3h.01',
 		logout: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11',
 		trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
-		plus: 'M12 5v14M5 12h14'
+		plus: 'M12 5v14M5 12h14',
+		chevronUp: 'M6 15l6-6 6 6'
 	} as const;
 
 	let {
