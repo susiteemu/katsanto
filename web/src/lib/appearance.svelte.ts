@@ -19,6 +19,8 @@ export interface Settings {
 	cardSize: CardSize;
 	layout: Layout;
 	show: { avatars: boolean; views: boolean; dates: boolean; durations: boolean };
+	/** Show consecutive videos from one channel on Home as a stack. */
+	groupChannels: boolean;
 	/** Extra CSS applied after Katsanto's own styles. */
 	customCss: string;
 }
@@ -33,6 +35,7 @@ export const DEFAULTS: Settings = {
 	cardSize: 'medium',
 	layout: 'grid',
 	show: { avatars: true, views: true, dates: true, durations: true },
+	groupChannels: false,
 	customCss: ''
 };
 
@@ -105,6 +108,7 @@ export function normalize(input: unknown): Settings {
 			dates: bool(show.dates, true),
 			durations: bool(show.durations, true)
 		},
+		groupChannels: bool(s.groupChannels, DEFAULTS.groupChannels),
 		customCss: typeof s.customCss === 'string' ? s.customCss.slice(0, MAX_CSS) : ''
 	};
 }
