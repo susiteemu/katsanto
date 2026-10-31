@@ -24,6 +24,10 @@
 		 * stored from the channel's feed and goes stale.
 		 */
 		showViews?: boolean;
+		/** Draw the card as a stack with this many more videos underneath. */
+		stacked?: number;
+		/** Called when the stack's badge is tapped. */
+		onexpand?: () => void;
 		/** Show the actions menu; called after "Hide" so the list can drop the card. */
 		onhide?: (id: string) => void;
 		/** Extra items at the top of the actions menu. */
@@ -36,6 +40,8 @@
 		layout: layoutProp,
 		showChannel = true,
 		showViews = false,
+		stacked = 0,
+		onexpand,
 		onhide,
 		menuItems
 	}: Props = $props();
@@ -105,6 +111,9 @@
 		class="relative block shrink-0 overflow-hidden rounded-card bg-surface-2 {layout === 'grid'
 			? 'w-full'
 			: 'w-40 sm:w-44'} {video.is_short ? 'aspect-[9/16]' : 'aspect-video'}"
+		style:box-shadow={stacked
+			? '5px -5px 0 -1px var(--surface-2), 10px -10px 0 -2px var(--border)'
+			: undefined}
 		aria-label={b.title}
 	>
 		{#if thumb}
@@ -141,6 +150,14 @@
 			>
 		{/if}
 	</a>
+	{#if stacked}
+		<button
+			class="absolute top-1.5 left-1.5 rounded-full bg-accent px-2.5 py-1 text-sm font-medium text-accent-fg tabular-nums shadow-card after:absolute after:-inset-2"
+			aria-label={m.home.showStack(stacked, video.channel?.name ?? '')}
+			title={m.home.showStack(stacked, video.channel?.name ?? '')}
+			onclick={onexpand}>+{stacked}</button
+		>
+	{/if}
 	<div class="flex min-w-0 gap-3">
 		{#if layout === 'grid' && showChannel && show.avatars && video.channel?.avatar_url}
 			<!-- Duplicates the channel name link below, so it is hidden from assistive tech. -->

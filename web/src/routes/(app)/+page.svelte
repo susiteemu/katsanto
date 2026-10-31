@@ -2,8 +2,11 @@
 	import { m } from '#lib/i18n/index.js';
 	import { goto } from '$app/navigation';
 	import { page, updated } from '$app/state';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
+	import { SvelteSet } from 'svelte/reactivity';
 	import { api, errorMessage, unwrap, type Schemas } from '#lib/api/client.js';
+	import { appearance } from '#lib/appearance.svelte.js';
+	import { channelRuns } from '#lib/feedGroups.js';
 	import { subscriptions } from '#lib/subscriptions.svelte.js';
 	import Alert from '#lib/components/Alert.svelte';
 	import Icon from '#lib/components/Icon.svelte';
@@ -158,11 +161,36 @@
 	}
 
 	const noSubscriptions = $derived(subscriptions.ids.size === 0);
+
+	const runs = $derived(
+		appearance.settings.groupChannels
+			? channelRuns(items)
+			: [{ start: 0, end: items.length, stack: false }].filter((r) => r.end > 0)
+	);
+	/** Stacks opened by the user, by their newest video, which more pages don't change. */
+	const expanded = new SvelteSet<string>();
+
+	async function collapse(id: string) {
+		expanded.delete(id);
+		await tick();
+		// The cards above the viewport may just have gone: don't jump further down the feed.
+		document.getElementById(`stack-${id}`)?.scrollIntoView({ block: 'nearest' });
+	}
 </script>
 
 <svelte:head><title>{m.home.title}</title></svelte:head>
 
 <PullToRefresh {refresh} />
+
+{#snippet card(i: number, stacked = 0, onexpand?: () => void)}
+	<VideoCard
+		video={items[i].video}
+		bind:progress={items[i].progress}
+		{stacked}
+		{onexpand}
+		onhide={(id) => (items = items.filter((x) => x.video.id !== id))}
+	/>
+{/snippet}
 
 <div class="mx-auto flex max-w-[110rem] flex-col gap-6">
 	<h1 class="sr-only">{current?.name ?? m.nav.home}</h1>
@@ -302,12 +330,32 @@
 		{/if}
 
 		<VideoGrid>
-			{#each items as item, i (item.video.id)}
-				<VideoCard
-					video={item.video}
-					bind:progress={items[i].progress}
-					onhide={(id) => (items = items.filter((x) => x.video.id !== id))}
-				/>
+			{#each runs as run (items[run.start].video.id)}
+				{@const first = items[run.start].video.id}
+				{#if run.stack && !expanded.has(first)}
+					<div id="stack-{first}">
+						{@render card(run.start, run.end - run.start - 1, () => expanded.add(first))}
+					</div>
+				{:else}
+					{#each items.slice(run.start, run.end) as item, i (item.video.id)}
+						{@render card(run.start + i)}
+					{/each}
+					{#if run.stack}
+						<div class="col-span-full -mt-2 flex items-center gap-3 text-sm text-muted">
+							<span class="h-px flex-1 bg-border"></span>
+							<button
+								class="flex max-w-[80%] items-center gap-1.5 rounded-full bg-surface-2 px-3 py-1 font-medium hover:bg-border hover:text-fg"
+								onclick={() => collapse(first)}
+							>
+								<Icon name="chevronUp" size={14} class="shrink-0" />
+								<span class="truncate"
+									>{m.home.collapseStack(items[run.start].video.channel?.name ?? '')}</span
+								>
+							</button>
+							<span class="h-px flex-1 bg-border"></span>
+						</div>
+					{/if}
+				{/if}
 			{/each}
 		</VideoGrid>
 

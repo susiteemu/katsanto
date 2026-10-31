@@ -167,6 +167,9 @@ export const en = {
 		watched: 'Watched',
 		shorts: 'Shorts',
 		saveAsFeed: 'Save as feed',
+		showStack: (n: number, channel: string) =>
+			`Show ${n} more ${n === 1 ? 'video' : 'videos'} from ${channel}`,
+		collapseStack: (channel: string) => `Collapse ${channel}`,
 		fresh: (n: number) => `${n} new ${n === 1 ? 'video' : 'videos'} — show`,
 		noSubscriptions: 'Subscribe to channels and their new videos show up here.',
 		findChannels: 'Find channels',
@@ -449,6 +452,8 @@ export const en = {
 			dates: 'Upload dates',
 			durations: 'Durations'
 		},
+		groupChannels: 'Group consecutive videos from the same channel',
+		groupChannelsHint: 'Four or more in a row become one stack on Home.',
 		customCss: 'Custom CSS',
 		customCssHint: 'Override any design token, e.g.',
 		customCssOnlyYou: 'Applies only to you.',

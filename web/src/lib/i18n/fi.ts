@@ -166,6 +166,9 @@ export const fi: Messages = {
 		watched: 'Katsotut',
 		shorts: 'Shortsit',
 		saveAsFeed: 'Tallenna syötteeksi',
+		showStack: (n: number, channel: string) =>
+			`Näytä ${n} ${n === 1 ? 'muu video' : 'muuta videota'} kanavalta ${channel}`,
+		collapseStack: (channel: string) => `Pienennä ${channel}`,
 		fresh: (n: number) => `${n} ${n === 1 ? 'uusi video' : 'uutta videota'} — näytä`,
 		noSubscriptions: 'Tilaa kanavia, niin niiden uudet videot näkyvät tässä.',
 		findChannels: 'Etsi kanavia',
@@ -455,6 +458,8 @@ export const fi: Messages = {
 			dates: 'Julkaisupäivät',
 			durations: 'Kestot'
 		},
+		groupChannels: 'Ryhmittele saman kanavan peräkkäiset videot',
+		groupChannelsHint: 'Vähintään neljä peräkkäistä videota näkyy etusivulla yhtenä pinona.',
 		customCss: 'Oma CSS',
 		customCssHint: 'Ohita mikä tahansa suunnittelumuuttuja, esim.',
 		customCssOnlyYou: 'Koskee vain sinua.',
