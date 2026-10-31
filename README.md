@@ -53,6 +53,9 @@ cargo install rustypipe-botguard --locked --root data/tools
 # open http://localhost:3000
 ```
 
+To get the latest released Linux x86_64 binary instead of building, run
+`scripts/install.sh [dir]` (or pipe it from `raw.githubusercontent.com/susiteemu/katsanto/main/scripts/install.sh` to `sh`).
+
 The binary (`target/release/katsanto-server`) is self-contained apart from botguard; copy it
 anywhere and point it at a config file and data directory (see
 [Configuration](#configuration)). To run it as a service, a systemd unit along these lines works:
