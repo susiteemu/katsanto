@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.0](https://github.com/susiteemu/katsanto/compare/v1.3.4...v1.4.0) (2026-10-31)
+
+
+### Features
+
+* group consecutive videos from the same channel into a stack ([d641ece](https://github.com/susiteemu/katsanto/commit/d641ece4705e11241a822977f81c4d6980529319))
+* group consecutive videos from the same channel into a stack ([acb635e](https://github.com/susiteemu/katsanto/commit/acb635e2592525fc829ecc6b72f80291d2359930))
+
 ## [1.3.4](https://github.com/susiteemu/katsanto/compare/v1.3.3...v1.3.4) (2026-10-31)
 
 
