@@ -9,6 +9,7 @@ repository.workspace = true
 [dependencies]
 async-trait = "0.1.92"
 base64 = "0.23.1"
+futures-util = "0.3.34"
 quick-xml = "0.37"
 regex = "1.13.1"
 reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls-native-roots", "http2"] }

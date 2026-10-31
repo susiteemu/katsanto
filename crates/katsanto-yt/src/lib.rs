@@ -16,3 +16,8 @@ mod source;
 pub use client::{YoutubeClient, YoutubeConfig};
 pub use player::USER_AGENT;
 pub use source::{YoutubeSource, YtError, YtResult};
+
+/// Limit for HTTP/2 response headers. The default of 16 KiB is too small: with a browser
+/// user agent YouTube sends over 17 KiB, and going over the limit fails the request with
+/// nothing but "error sending request".
+pub const MAX_RESPONSE_HEADERS: u32 = 64 * 1024;

@@ -57,6 +57,7 @@ impl AppState {
         let http = reqwest::Client::builder()
             .connect_timeout(Duration::from_secs(10))
             .read_timeout(Duration::from_secs(30))
+            .http2_max_header_list_size(katsanto_yt::MAX_RESPONSE_HEADERS)
             .build()
             .expect("http client");
         let sponsorblock = (!config.sponsorblock_api.trim().is_empty()).then(|| {

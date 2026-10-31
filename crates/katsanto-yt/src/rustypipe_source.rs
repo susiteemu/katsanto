@@ -37,7 +37,9 @@ impl RustyPipeSource {
         if let Some(dir) = config.storage_dir {
             builder = builder.storage_dir(dir);
         }
-        let rp = builder.build().map_err(map_err)?;
+        let http =
+            reqwest::Client::builder().http2_max_header_list_size(crate::MAX_RESPONSE_HEADERS);
+        let rp = builder.build_with_client(http).map_err(map_err)?;
         Ok(Self { rp })
     }
 

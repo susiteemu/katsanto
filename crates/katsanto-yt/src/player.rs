@@ -81,6 +81,7 @@ impl PlayerClient {
         let http = reqwest::Client::builder()
             .user_agent(USER_AGENT)
             .timeout(Duration::from_secs(30))
+            .http2_max_header_list_size(crate::MAX_RESPONSE_HEADERS)
             .build()
             .map_err(|e| YtError::Other(e.to_string()))?;
         Ok(Self {
