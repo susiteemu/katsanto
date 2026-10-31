@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.3](https://github.com/susiteemu/katsanto/compare/v1.3.2...v1.3.3) (2026-10-31)
+
+
+### Bug Fixes
+
+* accept YouTube's larger response headers and survive rustypipe panics ([#19](https://github.com/susiteemu/katsanto/issues/19)) ([a72089c](https://github.com/susiteemu/katsanto/commit/a72089c8409b656cdf156877122efbf4c1de7292))
+
 ## [1.3.2](https://github.com/susiteemu/katsanto/compare/v1.3.1...v1.3.2) (2026-10-30)
 
 
