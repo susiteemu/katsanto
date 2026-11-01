@@ -195,8 +195,10 @@ cd web && npm run dev
   (CI fails if it is out of date)
 
 Layout: `crates/katsanto-yt` (YouTube: rustypipe for metadata, own player client + yt-dlp's ejs
-solver for streams), `crates/katsanto-db` (SQLite), `crates/katsanto-server` (axum API, auth,
-media proxy, SponsorBlock/DeArrow, WebSub, embedded web app), `web/` (SvelteKit app).
+solver for streams), `crates/katsanto-db` (SQLite), `crates/katsanto-app` (axum API, auth,
+media proxy, SponsorBlock/DeArrow, WebSub), `crates/katsanto-web` (the web app embedded into
+release builds; a crate of its own so a web build doesn't recompile the server),
+`crates/katsanto-server` (the binary), `web/` (SvelteKit app).
 
 ### Releasing
 
@@ -210,7 +212,7 @@ commit messages (or PR titles, when squash merging) must follow
 
 On every push to `main`, release-please opens or updates a release PR that bumps the version in
 `Cargo.toml`, `Cargo.lock`, the internal dependency requirements in
-`crates/katsanto-server/Cargo.toml` and the OpenAPI spec, and adds the new section to
+`crates/katsanto-app/Cargo.toml` and `crates/katsanto-server/Cargo.toml` and the OpenAPI spec, and adds the new section to
 `CHANGELOG.md`. Edit the changelog in that PR if needed. Merging it tags `v<version>`, publishes the
 GitHub release and attaches `katsanto-<version>-linux-x86_64.tar.gz`.
 

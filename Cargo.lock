@@ -1556,20 +1556,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "katsanto-db"
-version = "1.4.0"
-dependencies = [
- "serde",
- "serde_json",
- "sqlx",
- "thiserror 2.0.21",
- "time",
- "tokio",
- "tracing",
-]
-
-[[package]]
-name = "katsanto-server"
+name = "katsanto-app"
 version = "1.4.0"
 dependencies = [
  "argon2",
@@ -1589,7 +1576,6 @@ dependencies = [
  "rand 0.9.5",
  "regex",
  "reqwest",
- "rust-embed",
  "serde",
  "serde_json",
  "sha1 0.11.0",
@@ -1603,13 +1589,46 @@ dependencies = [
  "tower-http 0.7.1",
  "tower_governor",
  "tracing",
- "tracing-subscriber",
  "url",
  "utoipa",
  "utoipa-axum",
  "uuid",
  "webauthn-authenticator-rs",
  "webauthn-rs",
+]
+
+[[package]]
+name = "katsanto-db"
+version = "1.4.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "sqlx",
+ "thiserror 2.0.21",
+ "time",
+ "tokio",
+ "tracing",
+]
+
+[[package]]
+name = "katsanto-server"
+version = "1.4.0"
+dependencies = [
+ "axum",
+ "katsanto-app",
+ "katsanto-db",
+ "katsanto-web",
+ "katsanto-yt",
+ "tokio",
+ "tracing",
+ "tracing-subscriber",
+]
+
+[[package]]
+name = "katsanto-web"
+version = "1.4.0"
+dependencies = [
+ "rust-embed",
 ]
 
 [[package]]

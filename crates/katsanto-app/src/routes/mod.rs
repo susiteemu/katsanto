@@ -9,7 +9,7 @@ mod subscriptions;
 pub(crate) mod watch;
 mod web;
 
-use std::sync::Arc;
+use std::{borrow::Cow, sync::Arc};
 
 use axum::{
     Json, Router,
@@ -48,9 +48,15 @@ use crate::{
 )]
 struct ApiDoc;
 
+/// Looks up a file of the web app by its path relative to `web/build`.
+pub type Assets = fn(&str) -> Option<Cow<'static, [u8]>>;
+
 pub struct Options {
     /// Per-client rate limiting of the auth endpoints (off in tests, which have no peer address).
     pub rate_limit: bool,
+    /// The web app, served for everything outside the API (`katsanto_web::get`). It lives
+    /// in a crate of its own so a web build doesn't recompile this one.
+    pub assets: Option<Assets>,
 }
 
 pub fn router(state: AppState, opts: Options) -> Router {
@@ -116,17 +122,18 @@ pub fn router(state: AppState, opts: Options) -> Router {
     );
 
     let proxy_video = state.config.proxy_video;
-    let csp = content_security_policy(proxy_video);
+    let assets = opts.assets;
+    let csp = content_security_policy(proxy_video, assets);
     Router::new()
         .merge(api)
         .merge(proxy)
         .merge(websub)
-        .fallback(web::serve)
+        .fallback(move |uri| web::serve(assets, uri))
         .layer(middleware::from_fn(move |req, next| {
             // Debug builds read the web app from disk, which a rebuild can change under a
             // running server: recompute the inline script hashes for every response.
             let csp = if cfg!(debug_assertions) {
-                content_security_policy(proxy_video)
+                content_security_policy(proxy_video, assets)
             } else {
                 csp.clone()
             };
@@ -139,8 +146,8 @@ pub fn router(state: AppState, opts: Options) -> Router {
 /// What the web app may load: only our own origin (images and video go through the
 /// proxy), plus googlevideo when video isn't proxied. Inline styles are allowed for
 /// the user's custom CSS and the player; inline scripts only by hash.
-fn content_security_policy(proxy_video: bool) -> HeaderValue {
-    let scripts = web::inline_script_hashes().join(" ");
+fn content_security_policy(proxy_video: bool, assets: Option<Assets>) -> HeaderValue {
+    let scripts = web::inline_script_hashes(assets).join(" ");
     let video = if proxy_video {
         ""
     } else {

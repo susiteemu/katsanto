@@ -1,0 +1,10 @@
+[package]
+name = "katsanto-web"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+rust-embed = "8.13.0"

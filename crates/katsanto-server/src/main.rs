@@ -1,7 +1,7 @@
 use std::{net::SocketAddr, sync::Arc, time::Duration};
 
+use katsanto_app::{config::Config, routes, state::AppState};
 use katsanto_db::{Db, challenges, sessions};
-use katsanto_server::{config::Config, routes, state::AppState};
 use katsanto_yt::{YoutubeClient, YoutubeConfig};
 use tracing_subscriber::EnvFilter;
 
@@ -57,9 +57,15 @@ async fn main() {
 
     let bind = config.bind;
     let state = AppState::new(config, db, Arc::new(yt)).expect("app state");
-    katsanto_server::refresh::spawn(state.clone());
-    katsanto_server::websub::spawn(state.clone());
-    let app = routes::router(state, routes::Options { rate_limit: true });
+    katsanto_app::refresh::spawn(state.clone());
+    katsanto_app::websub::spawn(state.clone());
+    let app = routes::router(
+        state,
+        routes::Options {
+            rate_limit: true,
+            assets: Some(katsanto_web::get),
+        },
+    );
     let listener = tokio::net::TcpListener::bind(bind).await.expect("bind");
     tracing::info!("listening on http://{bind}");
     axum::serve(
