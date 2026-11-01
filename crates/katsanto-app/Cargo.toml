@@ -14,8 +14,8 @@ base64 = "0.23.1"
 figment = { version = "0.10.19", features = ["toml", "env"] }
 futures-util = "0.3.34"
 hmac = "0.13.0"
-katsanto-db = { version = "1.4.0", path = "../katsanto-db" }
-katsanto-yt = { version = "1.4.0", path = "../katsanto-yt", features = ["openapi"] }
+katsanto-db = { version = "1.4.1", path = "../katsanto-db" }
+katsanto-yt = { version = "1.4.1", path = "../katsanto-yt", features = ["openapi"] }
 mime_guess = "2.0.5"
 moka = { version = "0.12.16", features = ["future"] }
 openssl = { version = "0.10.81", features = ["vendored"] }

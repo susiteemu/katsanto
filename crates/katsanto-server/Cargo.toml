@@ -8,10 +8,10 @@ repository.workspace = true
 
 [dependencies]
 axum = "0.8.9"
-katsanto-app = { version = "1.4.0", path = "../katsanto-app" }
-katsanto-db = { version = "1.4.0", path = "../katsanto-db" }
-katsanto-web = { version = "1.4.0", path = "../katsanto-web" }
-katsanto-yt = { version = "1.4.0", path = "../katsanto-yt" }
+katsanto-app = { version = "1.4.1", path = "../katsanto-app" }
+katsanto-db = { version = "1.4.1", path = "../katsanto-db" }
+katsanto-web = { version = "1.4.1", path = "../katsanto-web" }
+katsanto-yt = { version = "1.4.1", path = "../katsanto-yt" }
 tokio = { version = "1.54.1", features = ["full"] }
 tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }

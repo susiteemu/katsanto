@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.1](https://github.com/susiteemu/katsanto/compare/v1.4.0...v1.4.1) (2026-11-01)
+
+
+### Bug Fixes
+
+* keep the watch page within the screen width on phones ([6b29306](https://github.com/susiteemu/katsanto/commit/6b2930605690a8e98841033546782e051db3a910))
+* keep the watch page within the screen width on phones ([0dc5c92](https://github.com/susiteemu/katsanto/commit/0dc5c92c551df6b095e8e7e291e02aa5f8125a89))
+
 ## [1.4.0](https://github.com/susiteemu/katsanto/compare/v1.3.4...v1.4.0) (2026-10-31)
 
 
