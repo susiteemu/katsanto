@@ -1,4 +1,4 @@
-//! The SvelteKit app (`web/build`), embedded into the binary in release builds.
+//! Serving the SvelteKit app (`web/build`), which the binary passes in (see `katsanto-web`).
 
 use axum::{
     http::{StatusCode, Uri, header},
@@ -6,20 +6,17 @@ use axum::{
 };
 use base64::{Engine, engine::general_purpose::STANDARD};
 use regex::Regex;
-use rust_embed::Embed;
 use sha2::{Digest, Sha256};
 
-#[derive(Embed)]
-#[folder = "../../web/build"]
-#[allow_missing = true]
-struct Assets;
+use super::Assets;
 
 /// Serve a static file, or the app shell for client-side routes.
-pub async fn serve(uri: Uri) -> Response {
+pub async fn serve(assets: Option<Assets>, uri: Uri) -> Response {
     let path = uri.path().trim_start_matches('/');
     if path.starts_with("api/") || path.starts_with("proxy/") {
         return StatusCode::NOT_FOUND.into_response();
     }
+    let file = |path| assets.and_then(|get| file(get, path));
     if let Some(res) = file(path) {
         return res;
     }
@@ -41,9 +38,9 @@ pub async fn serve(uri: Uri) -> Response {
     })
 }
 
-fn file(path: &str) -> Option<Response> {
+fn file(assets: Assets, path: &str) -> Option<Response> {
     let path = if path.is_empty() { "index.html" } else { path };
-    let asset = Assets::get(path)?;
+    let data = assets(path)?;
     let mime = mime_guess::from_path(path).first_or_octet_stream();
     // Hashed build output never changes; everything else must be revalidated.
     let cache = if path.starts_with("_app/immutable/") {
@@ -57,7 +54,7 @@ fn file(path: &str) -> Option<Response> {
                 (header::CONTENT_TYPE, mime.as_ref().to_owned()),
                 (header::CACHE_CONTROL, cache.to_owned()),
             ],
-            asset.data,
+            data,
         )
             .into_response(),
     )
@@ -65,9 +62,9 @@ fn file(path: &str) -> Option<Response> {
 
 /// CSP sources (`'sha256-…'`) for the app shell's inline scripts (app.html's pre-paint
 /// script and SvelteKit's bootstrap), so the policy needs no `'unsafe-inline'`.
-pub fn inline_script_hashes() -> Vec<String> {
-    match Assets::get("index.html") {
-        Some(f) => script_hashes(&String::from_utf8_lossy(&f.data)),
+pub fn inline_script_hashes(assets: Option<Assets>) -> Vec<String> {
+    match assets.and_then(|get| get("index.html")) {
+        Some(data) => script_hashes(&String::from_utf8_lossy(&data)),
         None => Vec::new(),
     }
 }

@@ -9,8 +9,8 @@ use axum::{
     http::{Method, Request, StatusCode, header},
 };
 use http_body_util::BodyExt;
+use katsanto_app::{config::Config, routes, state::AppState};
 use katsanto_db::Db;
-use katsanto_server::{config::Config, routes, state::AppState};
 use katsanto_yt::{
     YoutubeSource, YtError, YtResult,
     model::{
@@ -181,7 +181,13 @@ impl App {
         let db = Db::in_memory().await.unwrap();
         let state = AppState::new(config, db.clone(), Arc::new(FakeYoutube)).unwrap();
         Self {
-            router: routes::router(state.clone(), routes::Options { rate_limit: false }),
+            router: routes::router(
+                state.clone(),
+                routes::Options {
+                    rate_limit: false,
+                    assets: None,
+                },
+            ),
             db,
             state,
             origin: Url::parse(public_url).unwrap(),
@@ -1147,17 +1153,13 @@ async fn subscriptions_and_feed() {
     // The refresher polls the channel, stores uploads and enriches them.
     let mut events = app.state.feed_events.subscribe();
     assert_eq!(
-        katsanto_server::refresh::run_once(&app.state)
-            .await
-            .unwrap(),
+        katsanto_app::refresh::run_once(&app.state).await.unwrap(),
         1
     );
     let ev = events.try_recv().unwrap();
     assert_eq!(ev.video_ids.len(), 3);
     assert_eq!(
-        katsanto_server::refresh::run_once(&app.state)
-            .await
-            .unwrap(),
+        katsanto_app::refresh::run_once(&app.state).await.unwrap(),
         0,
         "not due again yet"
     );
@@ -1268,9 +1270,7 @@ async fn subscribed_feed(app: &App, c: &mut Client) {
         json!({ "channel_id": FAKE_CHANNEL }),
     )
     .await;
-    katsanto_server::refresh::run_once(&app.state)
-        .await
-        .unwrap();
+    katsanto_app::refresh::run_once(&app.state).await.unwrap();
 }
 
 fn ids(page: &Value) -> Vec<String> {
@@ -1880,9 +1880,7 @@ async fn channel_page_stands_in_for_a_failing_rss_feed() {
         )
         .await;
     assert!(res.status.is_success(), "{:?}", res.body);
-    katsanto_server::refresh::run_once(&app.state)
-        .await
-        .unwrap();
+    katsanto_app::refresh::run_once(&app.state).await.unwrap();
 
     let subs = app.get(&mut a, "/api/v1/subscriptions").await;
     assert_eq!(subs.body[0]["fetch_error"], Value::Null, "{:?}", subs.body);

@@ -8,9 +8,13 @@
       "changelog-path": "CHANGELOG.md",
       "extra-files": [
         { "type": "toml", "path": "Cargo.toml", "jsonpath": "$.workspace.package.version" },
+        { "type": "toml", "path": "crates/katsanto-app/Cargo.toml", "jsonpath": "$.dependencies['katsanto-db'].version" },
+        { "type": "toml", "path": "crates/katsanto-app/Cargo.toml", "jsonpath": "$.dependencies['katsanto-yt'].version" },
+        { "type": "toml", "path": "crates/katsanto-server/Cargo.toml", "jsonpath": "$.dependencies['katsanto-app'].version" },
         { "type": "toml", "path": "crates/katsanto-server/Cargo.toml", "jsonpath": "$.dependencies['katsanto-db'].version" },
+        { "type": "toml", "path": "crates/katsanto-server/Cargo.toml", "jsonpath": "$.dependencies['katsanto-web'].version" },
         { "type": "toml", "path": "crates/katsanto-server/Cargo.toml", "jsonpath": "$.dependencies['katsanto-yt'].version" },
-        { "type": "toml", "path": "Cargo.lock", "jsonpath": "$.package[?(@.name.value == 'katsanto-db' || @.name.value == 'katsanto-server' || @.name.value == 'katsanto-yt')].version" },
+        { "type": "toml", "path": "Cargo.lock", "jsonpath": "$.package[?(@.name.value == 'katsanto-app' || @.name.value == 'katsanto-db' || @.name.value == 'katsanto-server' || @.name.value == 'katsanto-web' || @.name.value == 'katsanto-yt')].version" },
         { "type": "json", "path": "web/src/lib/api/openapi.json", "jsonpath": "$.info.version" }
       ]
     }
