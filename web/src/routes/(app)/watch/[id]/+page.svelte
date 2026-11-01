@@ -203,7 +203,9 @@
 <svelte:window {onkeydown} />
 <svelte:head><title>{title ? `${title} · Katsanto` : 'Katsanto'}</title></svelte:head>
 
-<div class="mx-auto grid max-w-[110rem] gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] xl:gap-8">
+<div
+	class="mx-auto grid max-w-[110rem] grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,1fr)_24rem] xl:gap-8"
+>
 	<div class="-mx-4 min-w-0 md:mx-0">
 		{#if error}
 			<div class="px-4 md:px-0"><Alert>{error}</Alert></div>
@@ -245,7 +247,7 @@
 			{/if}
 
 			<h1
-				class="text-xl leading-snug font-semibold"
+				class="text-xl leading-snug font-semibold wrap-anywhere"
 				title={brand.original ? m.community.originalTitle(brand.original) : undefined}
 			>
 				{title}
@@ -322,7 +324,7 @@
 									>
 										<span class="w-14 shrink-0 text-accent tabular-nums">{duration(c.start_s)}</span
 										>
-										<span>{c.title}</span>
+										<span class="min-w-0 wrap-anywhere">{c.title}</span>
 									</button>
 								</li>
 							{/each}
