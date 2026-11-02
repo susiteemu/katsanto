@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.4.2](https://github.com/susiteemu/katsanto/compare/v1.4.1...v1.4.2) (2026-11-02)
+
+
+### Bug Fixes
+
+* **yt:** treat UNPLAYABLE bot check as Blocked ([4665445](https://github.com/susiteemu/katsanto/commit/46654450c8640b1739b7c8710cae84b93585346b))
+* **yt:** treat UNPLAYABLE bot check as Blocked ([f0b9375](https://github.com/susiteemu/katsanto/commit/f0b93757f4a0e670739fcbf2dff608ddab74b353))
+
 ## [1.4.1](https://github.com/susiteemu/katsanto/compare/v1.4.0...v1.4.1) (2026-11-01)
 
 
