@@ -478,7 +478,10 @@ fn check_playability(p: &PlayabilityStatus) -> YtResult<()> {
     let reason = || p.reason.clone().unwrap_or_else(|| p.status.clone());
     match p.status.as_str() {
         "OK" => Ok(()),
-        "LOGIN_REQUIRED" if reason().contains("bot") => Err(YtError::Blocked(reason())),
+        // The bot check arrives as LOGIN_REQUIRED or UNPLAYABLE depending on the client.
+        "LOGIN_REQUIRED" | "UNPLAYABLE" if reason().contains("not a bot") => {
+            Err(YtError::Blocked(reason()))
+        }
         "ERROR" if reason().contains("unavailable") => Err(YtError::NotFound(reason())),
         _ => Err(YtError::Unavailable(reason())),
     }
@@ -912,6 +915,10 @@ mod tests {
         assert!(check_playability(&s("OK", "")).is_ok());
         assert!(matches!(
             check_playability(&s("LOGIN_REQUIRED", "Sign in to confirm you’re not a bot")),
+            Err(YtError::Blocked(_))
+        ));
+        assert!(matches!(
+            check_playability(&s("UNPLAYABLE", "Sign in to confirm you’re not a bot")),
             Err(YtError::Blocked(_))
         ));
         assert!(matches!(
