@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.4.3](https://github.com/susiteemu/katsanto/compare/v1.4.2...v1.4.3) (2026-11-03)
+
+
+### Bug Fixes
+
+* hide members-only videos from feeds until they're public ([#31](https://github.com/susiteemu/katsanto/issues/31)) ([aa43fce](https://github.com/susiteemu/katsanto/commit/aa43fce139848be92f35cb7b47b2f7c466f4aef1))
+
 ## [1.4.2](https://github.com/susiteemu/katsanto/compare/v1.4.1...v1.4.2) (2026-11-02)
 
 
