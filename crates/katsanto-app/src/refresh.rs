@@ -170,11 +170,16 @@ async fn from_rss(
     drop(conn);
 
     let pending = feed::unenriched(st.db.pool(), channel_id).await?;
-    if !pending.is_empty()
-        && let Err(e) = enrich(st, channel_id, pending, &rss.videos).await
-    {
-        // Durations can wait for the next refresh; the uploads are stored.
-        tracing::info!(channel = channel_id, error = %e, "enrichment failed");
+    if !pending.is_empty() {
+        match enrich(st, channel_id, pending, &rss.videos).await {
+            Ok(found) => {
+                // Members-only uploads aren't in feeds, and are new once they're public.
+                new_ids.retain(|id| !found.members_only.contains(id));
+                new_ids.extend(found.went_public);
+            }
+            // Durations can wait for the next refresh; the uploads are stored.
+            Err(e) => tracing::info!(channel = channel_id, error = %e, "enrichment failed"),
+        }
     }
 
     Ok(Fetched {
@@ -223,14 +228,23 @@ async fn from_page(st: &AppState, channel_id: &str) -> AppResult<Result<Fetched,
             },
             v.duration_s.map(i64::from),
             v.is_live,
+            v.members_only,
         )
         .await?;
-        if is_new {
+        if is_new && !v.members_only {
             new_ids.push(v.id.clone());
         }
         newest = newest.max(Some(published_at));
     }
     Ok(Ok(Fetched { new_ids, newest }))
+}
+
+#[derive(Default)]
+struct Enriched {
+    /// Found to be members-only.
+    members_only: Vec<String>,
+    /// Members-only before, public now.
+    went_public: Vec<String>,
 }
 
 /// Look up unenriched videos on the channel's tabs: Videos first, then Shorts
@@ -240,7 +254,8 @@ async fn enrich(
     channel_id: &str,
     mut pending: Vec<String>,
     rss: &[katsanto_yt::model::FeedVideo],
-) -> AppResult<()> {
+) -> AppResult<Enriched> {
+    let mut out = Enriched::default();
     for tab in [ChannelTab::Videos, ChannelTab::Shorts, ChannelTab::Live] {
         if pending.is_empty() {
             break;
@@ -268,17 +283,23 @@ async fn enrich(
             .filter(|v| pending.contains(&v.id))
             .collect();
         for v in &found {
-            feed::enrich(
-                st.db.pool(),
+            let went_public = feed::enrich(
+                &mut *st.db.acquire().await?,
                 &Enrichment {
                     id: &v.id,
                     duration_s: v.duration_s.map(i64::from),
                     thumbnail_url: v.thumbnail_url.as_deref(),
                     is_short: tab == ChannelTab::Shorts || v.is_short,
                     is_live: v.is_live || v.is_upcoming,
+                    members_only: v.members_only,
                 },
             )
             .await?;
+            if v.members_only {
+                out.members_only.push(v.id.clone());
+            } else if went_public {
+                out.went_public.push(v.id.clone());
+            }
         }
         pending.retain(|id| !found.iter().any(|v| &v.id == id));
         let more_tabs = match tab {
@@ -291,7 +312,7 @@ async fn enrich(
         }
     }
 
-    // Not on any tab (members-only, removed, …): stop looking once it's old enough.
+    // Not on any tab (removed, unlisted, …): stop looking once it's old enough.
     let give_up: Vec<String> = pending
         .into_iter()
         .filter(|id| {
@@ -301,7 +322,7 @@ async fn enrich(
         })
         .collect();
     feed::mark_enriched(st.db.pool(), &give_up).await?;
-    Ok(())
+    Ok(out)
 }
 
 /// Poll active channels often and dormant ones rarely, with jitter so

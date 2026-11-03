@@ -1765,6 +1765,8 @@ export interface components {
 			is_live: boolean;
 			is_short: boolean;
 			is_upcoming: boolean;
+			/** @description Only for paying channel members, such as "Members first" uploads. */
+			members_only: boolean;
 			/**
 			 * Format: int64
 			 * @description Unix timestamp, when YouTube provides an exact date.

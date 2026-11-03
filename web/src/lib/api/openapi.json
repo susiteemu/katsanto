@@ -5131,7 +5131,8 @@
           "title",
           "is_live",
           "is_short",
-          "is_upcoming"
+          "is_upcoming",
+          "members_only"
         ],
         "properties": {
           "channel": {
@@ -5163,6 +5164,10 @@
           },
           "is_upcoming": {
             "type": "boolean"
+          },
+          "members_only": {
+            "type": "boolean",
+            "description": "Only for paying channel members, such as \"Members first\" uploads."
           },
           "published_at": {
             "type": [

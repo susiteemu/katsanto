@@ -69,7 +69,7 @@ pub async fn feed(e: impl Executor<'_>, user_id: i64, q: &FeedQuery) -> DbResult
     b.push(" JOIN channels c ON c.id = v.channel_id LEFT JOIN watch_progress p ON p.video_id = v.id AND p.user_id = ");
     b.push_bind(user_id);
     b.push(" WHERE v.published_at IS NOT NULL AND NOT EXISTS (SELECT 1 FROM hidden_videos h WHERE h.video_id = v.id AND h.user_id = ");
-    b.push_bind(user_id).push(")");
+    b.push_bind(user_id).push(") AND NOT v.members_only");
     if !q.include_shorts {
         b.push(" AND NOT v.is_short");
     }
@@ -257,7 +257,9 @@ pub async fn upsert_from_rss(conn: &mut crate::Conn, v: &FeedVideoMeta<'_>) -> D
          ON CONFLICT(id) DO UPDATE SET
            title = excluded.title,
            thumbnail_url = COALESCE(videos.thumbnail_url, excluded.thumbnail_url),
-           published_at = excluded.published_at,
+           -- After a members-only video becomes public, that time is its publish time.
+           published_at = CASE WHEN videos.went_public_at IS NULL
+                          THEN excluded.published_at ELSE videos.published_at END,
            view_count = excluded.view_count,
            is_short = videos.is_short OR excluded.is_short,
            updated_at = excluded.updated_at",
@@ -277,18 +279,20 @@ pub async fn upsert_from_rss(conn: &mut crate::Conn, v: &FeedVideoMeta<'_>) -> D
 
 /// Store a video found on the channel page (when RSS is unavailable). Its publish
 /// time is an estimate, so an exact one already stored is kept; duration and type
-/// come along, so it needs no enrichment. Returns true if the video is new.
+/// come along, so it needs no enrichment unless it's members-only, which is checked
+/// until it becomes public (see [`enrich`]). Returns true if the video is new.
 pub async fn upsert_from_page(
     conn: &mut crate::Conn,
     v: &FeedVideoMeta<'_>,
     duration_s: Option<i64>,
     is_live: bool,
+    members_only: bool,
 ) -> DbResult<bool> {
     let existed = crate::videos::exists(&mut *conn, v.id).await?;
     sqlx::query(
         "INSERT INTO videos (id, channel_id, title, thumbnail_url, published_at, view_count, is_short,
-                             is_live, duration_s, enriched, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?)
+                             is_live, duration_s, members_only, enriched, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOT ?, ?)
          ON CONFLICT(id) DO UPDATE SET
            title = excluded.title,
            thumbnail_url = COALESCE(videos.thumbnail_url, excluded.thumbnail_url),
@@ -297,7 +301,8 @@ pub async fn upsert_from_page(
            is_short = videos.is_short OR excluded.is_short,
            is_live = excluded.is_live,
            duration_s = COALESCE(excluded.duration_s, videos.duration_s),
-           enriched = 1,
+           members_only = videos.members_only OR excluded.members_only,
+           enriched = NOT (videos.members_only OR excluded.members_only),
            updated_at = excluded.updated_at",
     )
     .bind(v.id)
@@ -309,19 +314,28 @@ pub async fn upsert_from_page(
     .bind(v.is_short)
     .bind(is_live)
     .bind(duration_s)
+    .bind(members_only)
+    .bind(members_only)
     .bind(now())
     .execute(&mut *conn)
     .await?;
     Ok(!existed)
 }
 
+/// Members-only videos are checked this long for becoming public, then stay hidden.
+pub const MEMBERS_RECHECK_S: i64 = 14 * 24 * 3600;
+
+/// Videos to look up on the channel page: new ones, and members-only ones that may
+/// have become public.
 pub async fn unenriched(e: impl Executor<'_>, channel_id: &str) -> DbResult<Vec<String>> {
-    Ok(
-        sqlx::query_scalar("SELECT id FROM videos WHERE channel_id = ? AND NOT enriched")
-            .bind(channel_id)
-            .fetch_all(e)
-            .await?,
+    Ok(sqlx::query_scalar(
+        "SELECT id FROM videos WHERE channel_id = ? AND NOT enriched
+           AND (NOT members_only OR published_at > ?)",
     )
+    .bind(channel_id)
+    .bind(now() - MEMBERS_RECHECK_S)
+    .fetch_all(e)
+    .await?)
 }
 
 pub struct Enrichment<'a> {
@@ -330,27 +344,46 @@ pub struct Enrichment<'a> {
     pub thumbnail_url: Option<&'a str>,
     pub is_short: bool,
     pub is_live: bool,
+    pub members_only: bool,
 }
 
-/// Fill in what only the channel page knows. Unknown videos are ignored.
-pub async fn enrich(e: impl Executor<'_>, v: &Enrichment<'_>) -> DbResult<()> {
+/// Fill in what only the channel page knows. Unknown videos are ignored. A members-only
+/// video stays unenriched, so it's checked again; once it's public, it gets the current
+/// time as its publish time and the result is true.
+pub async fn enrich(conn: &mut crate::Conn, v: &Enrichment<'_>) -> DbResult<bool> {
+    let t = now();
+    let went_public = !v.members_only
+        && sqlx::query(
+            "UPDATE videos SET members_only = 0, went_public_at = ?, published_at = ?
+             WHERE id = ? AND members_only",
+        )
+        .bind(t)
+        .bind(t)
+        .bind(v.id)
+        .execute(&mut *conn)
+        .await?
+        .rows_affected()
+            > 0;
     sqlx::query(
         "UPDATE videos SET duration_s = COALESCE(?, duration_s), is_short = ?, is_live = ?,
-           thumbnail_url = COALESCE(?, thumbnail_url), enriched = 1, updated_at = ?
+           thumbnail_url = COALESCE(?, thumbnail_url), members_only = ?, enriched = NOT ?,
+           updated_at = ?
          WHERE id = ?",
     )
     .bind(v.duration_s)
     .bind(v.is_short)
     .bind(v.is_live)
     .bind(v.thumbnail_url)
-    .bind(now())
+    .bind(v.members_only)
+    .bind(v.members_only)
+    .bind(t)
     .bind(v.id)
-    .execute(e)
+    .execute(&mut *conn)
     .await?;
-    Ok(())
+    Ok(went_public)
 }
 
-/// Give up on enriching videos the channel page didn't list (e.g. members-only),
+/// Give up on enriching videos the channel page didn't list (e.g. removed ones),
 /// so they aren't looked up again on every refresh.
 pub async fn mark_enriched(e: impl Executor<'_>, ids: &[String]) -> DbResult<()> {
     if ids.is_empty() {

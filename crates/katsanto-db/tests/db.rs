@@ -573,13 +573,14 @@ mod subscriptions_and_feed {
         rss_video(&db, "v2", "UC1", 200, false).await;
         assert_eq!(feed::unenriched(db.pool(), "UC1").await.unwrap().len(), 2);
         feed::enrich(
-            db.pool(),
+            &mut db.acquire().await.unwrap(),
             &feed::Enrichment {
                 id: "v1",
                 duration_s: Some(61),
                 thumbnail_url: None,
                 is_short: false,
                 is_live: false,
+                members_only: false,
             },
         )
         .await
@@ -587,6 +588,97 @@ mod subscriptions_and_feed {
         feed::mark_enriched(db.pool(), &["v2".into()])
             .await
             .unwrap();
+        assert!(feed::unenriched(db.pool(), "UC1").await.unwrap().is_empty());
+    }
+
+    #[tokio::test]
+    async fn members_only_videos_are_hidden_until_public() {
+        let db = Db::in_memory().await.unwrap();
+        let u = user(&db, "u").await;
+        channel(&db, "UC1").await;
+        subscriptions::subscribe(db.pool(), u, "UC1").await.unwrap();
+        let uploaded = now() - 3 * 24 * 3600;
+        rss_video(&db, "m", "UC1", uploaded, false).await;
+        rss_video(&db, "p", "UC1", uploaded - 60, false).await;
+        let enrich = |id, members_only| feed::Enrichment {
+            id,
+            duration_s: Some(60),
+            thumbnail_url: None,
+            is_short: false,
+            is_live: false,
+            members_only,
+        };
+        let q = feed::FeedQuery {
+            limit: 10,
+            ..Default::default()
+        };
+        let ids = |rows: &[feed::FeedRow]| rows.iter().map(|r| r.id.clone()).collect::<Vec<_>>();
+
+        assert!(
+            !feed::enrich(&mut db.acquire().await.unwrap(), &enrich("m", true))
+                .await
+                .unwrap()
+        );
+        assert!(
+            !feed::enrich(&mut db.acquire().await.unwrap(), &enrich("p", false))
+                .await
+                .unwrap()
+        );
+        assert_eq!(ids(&feed::feed(db.pool(), u, &q).await.unwrap()), ["p"]);
+        // Looked up again until it's public.
+        assert_eq!(feed::unenriched(db.pool(), "UC1").await.unwrap(), ["m"]);
+
+        // Public now: new, and neither RSS nor the video's own page moves it back.
+        assert!(
+            feed::enrich(&mut db.acquire().await.unwrap(), &enrich("m", false))
+                .await
+                .unwrap()
+        );
+        rss_video(&db, "m", "UC1", uploaded, false).await;
+        videos::upsert_video(
+            db.pool(),
+            &videos::VideoMeta {
+                id: "m",
+                channel_id: "UC1",
+                title: "m",
+                thumbnail_url: None,
+                duration_s: Some(60),
+                published_at: Some(uploaded),
+                is_short: false,
+                is_live: false,
+            },
+        )
+        .await
+        .unwrap();
+        let rows = feed::feed(db.pool(), u, &q).await.unwrap();
+        assert_eq!(ids(&rows), ["m", "p"]);
+        assert!(rows[0].published_at > now() - 60);
+        assert!(feed::unenriched(db.pool(), "UC1").await.unwrap().is_empty());
+        assert!(
+            !feed::enrich(&mut db.acquire().await.unwrap(), &enrich("m", false))
+                .await
+                .unwrap()
+        );
+    }
+
+    #[tokio::test]
+    async fn old_members_only_videos_are_not_looked_up_again() {
+        let db = Db::in_memory().await.unwrap();
+        channel(&db, "UC1").await;
+        rss_video(&db, "m", "UC1", now() - feed::MEMBERS_RECHECK_S - 60, false).await;
+        feed::enrich(
+            &mut db.acquire().await.unwrap(),
+            &feed::Enrichment {
+                id: "m",
+                duration_s: None,
+                thumbnail_url: None,
+                is_short: false,
+                is_live: false,
+                members_only: true,
+            },
+        )
+        .await
+        .unwrap();
         assert!(feed::unenriched(db.pool(), "UC1").await.unwrap().is_empty());
     }
 }
@@ -651,13 +743,14 @@ mod feed_filters {
             .await
             .unwrap();
             feed::enrich(
-                &mut *conn,
+                &mut conn,
                 &feed::Enrichment {
                     id,
                     duration_s: dur,
                     thumbnail_url: None,
                     is_short: short,
                     is_live: live,
+                    members_only: false,
                 },
             )
             .await
