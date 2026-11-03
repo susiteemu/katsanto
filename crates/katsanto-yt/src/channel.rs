@@ -124,6 +124,10 @@ fn parse_lockup(l: &Value, tab: ChannelTab) -> Option<VideoCard> {
         .collect();
     let duration_s = badges.iter().find_map(|b| parse_duration(b));
     let badge_has = |word: &str| badges.iter().any(|b| b.to_ascii_uppercase().contains(word));
+    // "Members first" and other uploads only paying members can watch.
+    let members_only = find_all(l, "badgeViewModel")
+        .into_iter()
+        .any(|b| str_at(b, &["badgeStyle"]) == Some("BADGE_MEMBERS_ONLY"));
 
     let parts = find(meta, "contentMetadataViewModel")
         .map(labeled_parts)
@@ -172,6 +176,7 @@ fn parse_lockup(l: &Value, tab: ChannelTab) -> Option<VideoCard> {
         is_short: tab == ChannelTab::Shorts,
         is_upcoming: badge_has("UPCOMING")
             || parts.iter().any(|(text, _)| text.starts_with("Scheduled")),
+        members_only,
     })
 }
 
@@ -194,6 +199,7 @@ fn parse_short(s: &Value) -> Option<VideoCard> {
         is_live: false,
         is_short: true,
         is_upcoming: false,
+        members_only: false,
     })
 }
 
@@ -403,7 +409,23 @@ mod tests {
         assert!(
             v.items
                 .iter()
-                .all(|i| i.duration_s.is_some() && !i.is_short)
+                .all(|i| i.duration_s.is_some() && !i.is_short && !i.members_only)
+        );
+    }
+
+    #[test]
+    fn members_first_videos() {
+        let items = fixture("channel_members_first.json");
+        let parsed: Vec<(String, bool)> = items
+            .as_array()
+            .unwrap()
+            .iter()
+            .filter_map(|i| parse_lockup(&i["lockupViewModel"], ChannelTab::Videos))
+            .map(|v| (v.id, v.members_only))
+            .collect();
+        assert_eq!(
+            parsed,
+            [("xB5PU_uPszM".into(), true), ("bWtqGaoUlcQ".into(), false)]
         );
     }
 

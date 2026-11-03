@@ -100,6 +100,7 @@ export const en = {
 	video: {
 		live: 'LIVE',
 		upcoming: 'Upcoming',
+		membersOnly: 'Members only',
 		watched: 'Watched',
 		percentWatched: (p: number) => `${p}% watched`,
 		actions: (title: string) => `Actions for ${title}`,

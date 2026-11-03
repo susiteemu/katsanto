@@ -218,6 +218,7 @@ fn list_item(i: playlists::Item) -> ListItem {
         is_live: i.is_live,
         is_short: i.is_short,
         is_upcoming: false,
+        members_only: false,
     };
     proxy_card_images(&mut video);
     ListItem {

@@ -12,7 +12,8 @@
 		logout: 'M15 4h4v16h-4M10 8l-4 4 4 4M6 12h11',
 		trash: 'M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3',
 		plus: 'M12 5v14M5 12h14',
-		chevronUp: 'M6 15l6-6 6 6'
+		chevronUp: 'M6 15l6-6 6 6',
+		star: 'M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z'
 	} as const;
 
 	let {

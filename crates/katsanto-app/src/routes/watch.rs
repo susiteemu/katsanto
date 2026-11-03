@@ -211,6 +211,7 @@ async fn continue_watching(
                     is_live: v.is_live,
                     is_short: v.is_short,
                     is_upcoming: false,
+                    members_only: false,
                 };
                 proxy_card_images(&mut video);
                 ContinueItem {

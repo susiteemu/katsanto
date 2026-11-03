@@ -99,6 +99,7 @@ export const fi: Messages = {
 	video: {
 		live: 'LIVE',
 		upcoming: 'Tulossa',
+		membersOnly: 'Vain jäsenille',
 		watched: 'Katsottu',
 		percentWatched: (p: number) => `${p} % katsottu`,
 		actions: (title: string) => `Toiminnot: ${title}`,

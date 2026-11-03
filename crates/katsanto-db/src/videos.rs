@@ -59,7 +59,10 @@ pub async fn upsert_video(e: impl Executor<'_>, v: &VideoMeta<'_>) -> DbResult<(
            title = excluded.title,
            thumbnail_url = COALESCE(excluded.thumbnail_url, videos.thumbnail_url),
            duration_s = COALESCE(excluded.duration_s, videos.duration_s),
-           published_at = COALESCE(excluded.published_at, videos.published_at),
+           -- After a members-only video becomes public, that time is its publish time.
+           published_at = CASE WHEN videos.went_public_at IS NULL
+                          THEN COALESCE(excluded.published_at, videos.published_at)
+                          ELSE videos.published_at END,
            is_short = excluded.is_short OR videos.is_short,
            is_live = excluded.is_live,
            updated_at = excluded.updated_at",

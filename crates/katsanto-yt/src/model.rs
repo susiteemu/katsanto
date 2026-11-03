@@ -29,6 +29,8 @@ pub struct VideoCard {
     pub is_live: bool,
     pub is_short: bool,
     pub is_upcoming: bool,
+    /// Only for paying channel members, such as "Members first" uploads.
+    pub members_only: bool,
 }
 
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]

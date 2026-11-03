@@ -9,6 +9,7 @@
 	import { appearance } from '#lib/appearance.svelte.js';
 	import { branded } from '#lib/branding.svelte.js';
 	import { copyYouTubeLink } from '#lib/share.js';
+	import Icon from './Icon.svelte';
 	import Menu from './Menu.svelte';
 	import { gridLayout } from './VideoGrid.svelte';
 
@@ -186,6 +187,12 @@
 				>
 			{/if}
 			{#if meta}<p class="text-sm text-muted">{meta}</p>{/if}
+			{#if video.members_only}
+				<span
+					class="mt-1 inline-flex items-center gap-1 rounded bg-surface-2 px-1.5 py-0.5 text-xs font-medium text-muted"
+					><Icon name="star" size={12} />{m.video.membersOnly}</span
+				>
+			{/if}
 		</div>
 		<div class="-mr-2 ml-auto shrink-0">
 			<Menu label={m.video.actions(b.title)}>

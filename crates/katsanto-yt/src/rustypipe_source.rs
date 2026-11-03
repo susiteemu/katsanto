@@ -351,6 +351,8 @@ fn video_card(v: VideoItem) -> VideoCard {
         is_live: v.is_live,
         is_short: v.is_short,
         is_upcoming: v.is_upcoming,
+        // rustypipe doesn't parse the badge.
+        members_only: false,
     }
 }
 

@@ -275,6 +275,7 @@ fn feed_item(r: FeedRow) -> FeedItem {
         is_live: r.is_live,
         is_short: r.is_short,
         is_upcoming: false,
+        members_only: false,
     };
     proxy_card_images(&mut video);
     FeedItem { video, progress }
