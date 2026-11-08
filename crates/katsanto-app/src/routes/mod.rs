@@ -108,6 +108,11 @@ pub fn router(state: AppState, opts: Options) -> Router {
 
     let proxy = Router::new()
         .route("/proxy/video/{video_id}/{stream_id}", get(proxy::video))
+        .route(
+            "/proxy/live/{video_id}/master.m3u8",
+            get(proxy::live_master),
+        )
+        .route("/proxy/live/{video_id}", get(proxy::live))
         .route("/proxy/img", get(proxy::image))
         .route(
             "/proxy/dearrow/{video_id}",

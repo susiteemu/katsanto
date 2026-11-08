@@ -5379,6 +5379,13 @@
           "details": {
             "$ref": "#/components/schemas/VideoDetails"
           },
+          "live_manifest_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "HLS playlist of a live stream, which the DASH manifest can't describe."
+          },
           "manifest_url": {
             "type": "string"
           },

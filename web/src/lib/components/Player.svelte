@@ -32,8 +32,10 @@
 
 	interface Props {
 		videoId: string;
-		/** DASH manifest URL. */
+		/** DASH manifest URL, or a live stream's HLS playlist. */
 		src: string;
+		/** `src` is a live stream's HLS playlist. */
+		live?: boolean;
 		title: string;
 		channel?: string;
 		poster?: string | null;
@@ -57,6 +59,7 @@
 	let {
 		videoId,
 		src,
+		live = false,
 		title,
 		channel = '',
 		poster = null,
@@ -81,6 +84,7 @@
 	 */
 	const manifestUrl = $derived.by(() => {
 		const url = new URL(src, location.href);
+		if (live) return url.href;
 		const opus =
 			typeof MediaSource !== 'undefined' &&
 			MediaSource.isTypeSupported('audio/webm; codecs="opus"');
@@ -95,7 +99,7 @@
 			webkitPresentationMode?: string;
 			webkitSetPresentationMode?: (mode: 'inline' | 'fullscreen') => void;
 		};
-	let media: Media;
+	let media: Media = $state()!;
 
 	/** Jump to a time (description timestamps, chapters) and keep playing. */
 	export function seek(seconds: number) {
@@ -229,10 +233,16 @@
 		};
 	});
 
+	// Live streams play through the HLS engine, loaded only when one is watched.
+	$effect(() => {
+		if (live) void import('@videojs/html/media/hls-video');
+	});
+
 	onMount(() => {
 		// Resume once the duration is known; seeking earlier is ignored by some engines.
+		// A live stream starts at the live edge.
 		const resume = () => {
-			if (startAt > 0 && startAt < media.duration - 5) media.currentTime = startAt;
+			if (!live && startAt > 0 && startAt < media.duration - 5) media.currentTime = startAt;
 		};
 		if (media.readyState >= 1) resume();
 		else media.addEventListener('loadedmetadata', resume, { once: true });
@@ -250,7 +260,8 @@
 		landscape.addEventListener('change', onLandscape);
 
 		const stopSession = mediaSession();
-		const stop = trackProgress(media, videoId);
+		// A position in a live stream means nothing later.
+		const stop = live ? () => {} : trackProgress(media, videoId);
 		const ended = () => onended?.();
 		media.addEventListener('ended', ended);
 		return () => {
@@ -265,26 +276,37 @@
 
 <video-player class="player">
 	<video-skin class="skin" bind:this={skinEl}>
-		<dash-video
-			bind:this={media}
-			source={{
-				// Absolute: dash.js's request plumbing (CMCD) can't parse relative URLs.
-				src: manifestUrl,
-				// CMCD sends playback telemetry along with segment requests; Katsanto doesn't want it.
-				engine: { dashJs: { streaming: { cmcd: { enabled: false } } } }
-			}}
-			poster={poster ?? undefined}
-			{autoplay}
-			playsinline
-			crossorigin="anonymous"
-		>
-			{#each captions as c (c.id)}
-				<track kind="subtitles" src={c.url} srclang={c.lang} label={c.label} />
-			{/each}
-			{#if chaptersUrl}
-				<track kind="chapters" src={chaptersUrl} default />
-			{/if}
-		</dash-video>
+		{#if live}
+			<hls-video
+				bind:this={media}
+				source={{ src: manifestUrl, type: 'application/vnd.apple.mpegurl' }}
+				poster={poster ?? undefined}
+				{autoplay}
+				playsinline
+				crossorigin="anonymous"
+			></hls-video>
+		{:else}
+			<dash-video
+				bind:this={media}
+				source={{
+					// Absolute: dash.js's request plumbing (CMCD) can't parse relative URLs.
+					src: manifestUrl,
+					// CMCD sends playback telemetry along with segment requests; Katsanto doesn't want it.
+					engine: { dashJs: { streaming: { cmcd: { enabled: false } } } }
+				}}
+				poster={poster ?? undefined}
+				{autoplay}
+				playsinline
+				crossorigin="anonymous"
+			>
+				{#each captions as c (c.id)}
+					<track kind="subtitles" src={c.url} srclang={c.lang} label={c.label} />
+				{/each}
+				{#if chaptersUrl}
+					<track kind="chapters" src={chaptersUrl} default />
+				{/if}
+			</dash-video>
+		{/if}
 		{#each HOTKEYS as h (h.keys)}
 			<media-hotkey target="document" keys={h.keys} action={h.action} value={h.value}
 			></media-hotkey>

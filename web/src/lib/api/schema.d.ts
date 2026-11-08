@@ -1826,6 +1826,8 @@ export interface components {
 		VideoResponse: {
 			captions: components['schemas']['CaptionTrack'][];
 			details: components['schemas']['VideoDetails'];
+			/** @description HLS playlist of a live stream, which the DASH manifest can't describe. */
+			live_manifest_url?: string | null;
 			manifest_url: string;
 			streams: components['schemas']['Stream'][];
 		};

@@ -134,6 +134,163 @@ pub async fn video(
     ))
 }
 
+/// A live stream's HLS playlist, for the player.
+pub fn live_manifest_url(video_id: &str) -> String {
+    format!("/proxy/live/{video_id}/master.m3u8")
+}
+
+/// URL under which the player loads a live stream's playlist or segment.
+fn live_url(video_id: &str, upstream: &str) -> String {
+    let encoded: String = url::form_urlencoded::byte_serialize(upstream.as_bytes()).collect();
+    format!("/proxy/live/{video_id}?u={encoded}")
+}
+
+/// Live streams are HLS: playlists of short segments that keep growing. Their URLs
+/// are bound to the server's IP like stream URLs, so the playlists are rewritten to
+/// load everything through [`live`].
+pub async fn live_master(
+    State(st): State<AppState>,
+    Path(video_id): Path<String>,
+) -> AppResult<Response> {
+    if !is_video_id(&video_id) {
+        return Err(AppError::BadRequest("invalid video id".into()));
+    }
+    let playback = st.playback(&video_id).await?;
+    let url = playback
+        .hls_manifest_url
+        .as_deref()
+        .ok_or_else(|| AppError::NotFound(format!("live stream {video_id}")))?;
+    playlist(&st, &video_id, url, &playback.user_agent).await
+}
+
+#[derive(Deserialize)]
+pub struct LiveQuery {
+    u: String,
+}
+
+/// A playlist or segment of a live stream, from a URL in one of its playlists.
+pub async fn live(
+    State(st): State<AppState>,
+    Path(video_id): Path<String>,
+    Query(q): Query<LiveQuery>,
+) -> AppResult<Response> {
+    if !is_video_id(&video_id) {
+        return Err(AppError::BadRequest("invalid video id".into()));
+    }
+    let url = url::Url::parse(&q.u).map_err(|_| AppError::BadRequest("invalid URL".into()))?;
+    // Only this video's playlists and segments: no open proxy.
+    if !is_live_url(&url, &video_id) {
+        return Err(AppError::BadRequest(
+            "not a part of this live stream".into(),
+        ));
+    }
+    let playback = st.playback(&video_id).await?;
+    if url.path().starts_with("/api/manifest/") {
+        return playlist(&st, &video_id, url.as_str(), &playback.user_agent).await;
+    }
+    let upstream = st
+        .http
+        .get(url)
+        .header(header::USER_AGENT, &playback.user_agent)
+        .send()
+        .await
+        .map_err(|e| AppError::Upstream(e.to_string()))?;
+    let status = upstream.status();
+    if !status.is_success() {
+        if matches!(status.as_u16(), 403 | 410) {
+            // Stale player data; the player asks for the playlist again.
+            st.invalidate_playback(&video_id).await;
+        }
+        return Err(AppError::Upstream(format!("googlevideo returned {status}")));
+    }
+    let mut res = Response::builder().status(status.as_u16());
+    for name in [header::CONTENT_TYPE, header::CONTENT_LENGTH] {
+        if let Some(v) = upstream.headers().get(&name) {
+            res = res.header(name, v.as_bytes());
+        }
+    }
+    res.header(header::CACHE_CONTROL, "private, max-age=3600")
+        .body(Body::from_stream(upstream.bytes_stream()))
+        .map_err(|e| AppError::Upstream(e.to_string()))
+}
+
+fn is_live_url(url: &url::Url, video_id: &str) -> bool {
+    url.scheme() == "https"
+        && url
+            .host_str()
+            .is_some_and(|h| h.ends_with(".googlevideo.com"))
+        && url.path().contains(&format!("/id/{video_id}."))
+}
+
+/// Fetch an HLS playlist and point its URLs at [`live`]. Playlists change every few
+/// seconds, so they aren't cached.
+async fn playlist(
+    st: &AppState,
+    video_id: &str,
+    url: &str,
+    user_agent: &str,
+) -> AppResult<Response> {
+    let upstream = st
+        .http
+        .get(url)
+        .header(header::USER_AGENT, user_agent)
+        .send()
+        .await
+        .map_err(|e| AppError::Upstream(e.to_string()))?;
+    let status = upstream.status();
+    if !status.is_success() {
+        if matches!(status.as_u16(), 403 | 410) {
+            st.invalidate_playback(video_id).await;
+        }
+        return Err(AppError::Upstream(format!("googlevideo returned {status}")));
+    }
+    let base = url::Url::parse(url).map_err(|e| AppError::Upstream(e.to_string()))?;
+    let text = upstream
+        .text()
+        .await
+        .map_err(|e| AppError::Upstream(e.to_string()))?;
+    let body = rewrite_playlist(&text, &base, |u| live_url(video_id, u));
+    Ok((
+        [
+            (header::CONTENT_TYPE, "application/vnd.apple.mpegurl"),
+            (header::CACHE_CONTROL, "no-store"),
+        ],
+        body,
+    )
+        .into_response())
+}
+
+/// Replace the URLs in an HLS playlist: lines that aren't tags, and `URI="…"`
+/// attributes. Relative URLs are resolved against `base` first.
+fn rewrite_playlist(text: &str, base: &url::Url, proxied: impl Fn(&str) -> String) -> String {
+    let resolve = |u: &str| {
+        base.join(u)
+            .map_or_else(|_| u.to_owned(), |u| proxied(u.as_str()))
+    };
+    let mut out = String::with_capacity(text.len() * 2);
+    for line in text.lines() {
+        if line.is_empty() {
+        } else if !line.starts_with('#') {
+            out.push_str(&resolve(line.trim()));
+        } else {
+            let mut rest = line;
+            while let Some(i) = rest.find("URI=\"") {
+                let (head, tail) = rest.split_at(i + 5);
+                out.push_str(head);
+                let Some(end) = tail.find('"') else {
+                    rest = tail;
+                    break;
+                };
+                out.push_str(&resolve(&tail[..end]));
+                rest = &tail[end..];
+            }
+            out.push_str(rest);
+        }
+        out.push('\n');
+    }
+    out
+}
+
 /// Parse a single `bytes=start-[end]` range. Suffix and multi-ranges are not
 /// used by media players and are rejected.
 fn parse_range(v: &str) -> Option<(u64, Option<u64>)> {
@@ -259,6 +416,40 @@ fn raster_image_type(content_type: &str) -> Option<String> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn rewrites_playlists() {
+        let base =
+            url::Url::parse("https://manifest.googlevideo.com/api/manifest/hls_variant/id/abc.1/")
+                .unwrap();
+        let text = "#EXTM3U\n#EXT-X-MEDIA:TYPE=SUBTITLES,URI=\"https://manifest.googlevideo.com/sub\",NAME=\"en\"\n#EXT-X-STREAM-INF:BANDWIDTH=1\nhttps://manifest.googlevideo.com/api/manifest/hls_playlist/x\n\n#EXTINF:5.0,\nseg/1\n";
+        let out = rewrite_playlist(text, &base, |u| format!("P({u})"));
+        assert_eq!(
+            out,
+            "#EXTM3U\n#EXT-X-MEDIA:TYPE=SUBTITLES,URI=\"P(https://manifest.googlevideo.com/sub)\",NAME=\"en\"\n#EXT-X-STREAM-INF:BANDWIDTH=1\nP(https://manifest.googlevideo.com/api/manifest/hls_playlist/x)\n\n#EXTINF:5.0,\nP(https://manifest.googlevideo.com/api/manifest/hls_variant/id/abc.1/seg/1)\n"
+        );
+    }
+
+    #[test]
+    fn live_urls_are_this_videos_only() {
+        let ok = |u: &str| is_live_url(&url::Url::parse(u).unwrap(), "ROboUHfPUrU");
+        assert!(ok(
+            "https://rr5---sn-x.googlevideo.com/videoplayback/id/ROboUHfPUrU.1/itag/91/sq/5"
+        ));
+        assert!(ok(
+            "https://manifest.googlevideo.com/api/manifest/hls_playlist/id/ROboUHfPUrU.1/itag/91"
+        ));
+        assert!(!ok(
+            "https://rr5---sn-x.googlevideo.com/videoplayback/id/OTHERVIDEO1.1/itag/91"
+        ));
+        assert!(!ok("https://evil.example/videoplayback/id/ROboUHfPUrU.1/"));
+        assert!(!ok(
+            "https://googlevideo.com.evil.example/id/ROboUHfPUrU.1/"
+        ));
+        assert!(!ok(
+            "http://rr5---sn-x.googlevideo.com/videoplayback/id/ROboUHfPUrU.1/"
+        ));
+    }
 
     #[test]
     fn parses_ranges() {
