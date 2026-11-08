@@ -6,6 +6,7 @@
 pub mod channel;
 mod client;
 pub mod dash;
+mod live;
 pub mod model;
 mod player;
 pub mod rss;

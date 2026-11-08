@@ -99,6 +99,10 @@ export const fi: Messages = {
 	video: {
 		live: 'LIVE',
 		upcoming: 'Tulossa',
+		starts: (when: string) => `Alkaa ${when}`,
+		startingSoon: 'Alkaa pian',
+		liveSince: (when: string) => `Live ${when} alkaen`,
+		streamed: (ago: string) => `Striimattu ${ago}`,
 		membersOnly: 'Vain jäsenille',
 		watched: 'Katsottu',
 		percentWatched: (p: number) => `${p} % katsottu`,

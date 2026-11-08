@@ -5165,6 +5165,22 @@
           "is_upcoming": {
             "type": "boolean"
           },
+          "live_at": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Live streams: the scheduled start while upcoming, then when it went live."
+          },
+          "live_ended_at": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Live streams that have ended: when."
+          },
           "members_only": {
             "type": "boolean",
             "description": "Only for paying channel members, such as \"Members first\" uploads."

@@ -31,6 +31,20 @@ pub struct VideoCard {
     pub is_upcoming: bool,
     /// Only for paying channel members, such as "Members first" uploads.
     pub members_only: bool,
+    /// Live streams: the scheduled start while upcoming, then when it went live.
+    pub live_at: Option<i64>,
+    /// Live streams that have ended: when.
+    pub live_ended_at: Option<i64>,
+}
+
+/// When a live stream or premiere starts and ends.
+#[derive(Clone, Debug, Default, PartialEq)]
+pub struct LiveTimes {
+    /// Not started yet.
+    pub upcoming: bool,
+    /// The scheduled start while upcoming, then the actual one.
+    pub starts_at: Option<i64>,
+    pub ended_at: Option<i64>,
 }
 
 #[cfg_attr(feature = "openapi", derive(utoipa::ToSchema))]

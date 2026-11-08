@@ -9,7 +9,7 @@ use std::time::Duration;
 
 use futures_util::{StreamExt, stream};
 use katsanto_db::{
-    feed::{self, Enrichment, FeedVideoMeta},
+    feed::{self, Enrichment, FeedVideoMeta, LiveState, PageFlags},
     now,
     videos::{self, ChannelMeta},
     websub,
@@ -27,6 +27,8 @@ use crate::{error::AppResult, state::AppState};
 const CONCURRENCY: usize = 4;
 /// Upper bound on idle sleep, so schedule changes are picked up.
 const MAX_IDLE: Duration = Duration::from_secs(60);
+/// Uploads found on the channel page are announced as new only if this recent.
+const ANNOUNCE_S: i64 = 24 * 3600;
 /// Videos the channel page doesn't list after this long are left unenriched.
 const ENRICH_GIVE_UP_S: i64 = 24 * 3600;
 
@@ -110,6 +112,9 @@ pub async fn refresh_channel(st: &AppState, channel_id: &str) -> AppResult<()> {
         interval = interval.max(crate::websub::PUSHED_POLL_S);
     }
     feed::mark_fetched(st.db.pool(), channel_id, newest, now() + interval).await?;
+    if let Err(e) = check_streams(st, channel_id).await {
+        tracing::info!(channel = channel_id, error = %e, "checking streams failed");
+    }
 
     if !new_ids.is_empty() {
         tracing::debug!(channel = channel_id, new = new_ids.len(), "new uploads");
@@ -188,18 +193,18 @@ async fn from_rss(
     })
 }
 
-/// Store the uploads listed on the channel's Videos tab (the RSS fallback). Its cards
-/// come with durations but only relative dates ("3 hours ago"), which become estimates.
-/// The outer error is ours; the inner one YouTube's.
+/// Store the uploads listed on the channel's Videos tab (the RSS fallback), and its
+/// streams from the Live tab. Cards come with durations but only relative dates
+/// ("3 hours ago"), which become estimates. The outer error is ours; the inner one
+/// YouTube's.
 async fn from_page(st: &AppState, channel_id: &str) -> AppResult<Result<Fetched, YtError>> {
     let page = match st.yt.channel(channel_id, ChannelTab::Videos).await {
         Ok(p) => p,
         Err(e) => return Ok(Err(e)),
     };
     let info = &page.channel;
-    let mut conn = st.db.acquire().await?;
     videos::upsert_channel(
-        &mut *conn,
+        st.db.pool(),
         &ChannelMeta {
             id: channel_id,
             name: &info.name,
@@ -209,10 +214,50 @@ async fn from_page(st: &AppState, channel_id: &str) -> AppResult<Result<Fetched,
         },
     )
     .await?;
-    let mut new_ids = Vec::new();
-    let mut newest = None;
-    for v in page.videos.items.iter().filter(|v| !v.is_upcoming) {
-        let Some(published_at) = v.published_at else {
+    let mut fetched = Fetched {
+        new_ids: Vec::new(),
+        newest: None,
+    };
+    store_tab(
+        st,
+        channel_id,
+        &page.videos.items,
+        ChannelTab::Videos,
+        &mut fetched,
+    )
+    .await?;
+    if info.has_live {
+        match st.yt.channel(channel_id, ChannelTab::Live).await {
+            Ok(live) => {
+                store_tab(
+                    st,
+                    channel_id,
+                    &live.videos.items,
+                    ChannelTab::Live,
+                    &mut fetched,
+                )
+                .await?;
+            }
+            // The uploads are stored; streams can wait for the next refresh.
+            Err(e) => tracing::info!(channel = channel_id, error = %e, "Live tab failed"),
+        }
+    }
+    Ok(Ok(fetched))
+}
+
+/// Store the videos on one of the channel's tabs. Upcoming and live streams have no
+/// date, so they're dated when first seen; [`check_streams`] then looks up their times.
+async fn store_tab(
+    st: &AppState,
+    channel_id: &str,
+    items: &[VideoCard],
+    tab: ChannelTab,
+    fetched: &mut Fetched,
+) -> AppResult<()> {
+    let mut conn = st.db.acquire().await?;
+    for v in items {
+        let stream = v.is_live || v.is_upcoming;
+        let Some(published_at) = v.published_at.or(stream.then(now)) else {
             continue;
         };
         let is_new = feed::upsert_from_page(
@@ -226,17 +271,38 @@ async fn from_page(st: &AppState, channel_id: &str) -> AppResult<Result<Fetched,
                 view_count: v.view_count.map(|n| n as i64),
                 is_short: v.is_short,
             },
-            v.duration_s.map(i64::from),
-            v.is_live,
-            v.members_only,
+            &PageFlags {
+                duration_s: v.duration_s.map(i64::from),
+                is_live: v.is_live,
+                is_upcoming: v.is_upcoming,
+                members_only: v.members_only,
+            },
         )
         .await?;
-        if is_new && !v.members_only {
-            new_ids.push(v.id.clone());
+        // Older videos are a channel's backlog, such as its past streams the first time
+        // the Live tab is read: stored, but not announced.
+        if is_new && !v.members_only && now() - published_at < ANNOUNCE_S {
+            fetched.new_ids.push(v.id.clone());
         }
-        newest = newest.max(Some(published_at));
+        if !stream {
+            fetched.newest = fetched.newest.max(Some(published_at));
+        }
+        if tab == ChannelTab::Live {
+            mark_streamed(&mut conn, v).await?;
+        }
     }
-    Ok(Ok(Fetched { new_ids, newest }))
+    Ok(())
+}
+
+/// An ended stream from the Live tab: "Streamed 3 hours ago" and its length give
+/// estimated times until exact ones are known.
+async fn mark_streamed(conn: &mut katsanto_db::Conn, v: &VideoCard) -> AppResult<()> {
+    if let (false, false, Some(start), Some(len)) =
+        (v.is_live, v.is_upcoming, v.published_at, v.duration_s)
+    {
+        feed::mark_streamed(&mut *conn, &v.id, start, start + i64::from(len)).await?;
+    }
+    Ok(())
 }
 
 #[derive(Default)]
@@ -290,7 +356,8 @@ async fn enrich(
                     duration_s: v.duration_s.map(i64::from),
                     thumbnail_url: v.thumbnail_url.as_deref(),
                     is_short: tab == ChannelTab::Shorts || v.is_short,
-                    is_live: v.is_live || v.is_upcoming,
+                    is_live: v.is_live,
+                    is_upcoming: v.is_upcoming,
                     members_only: v.members_only,
                 },
             )
@@ -299,6 +366,9 @@ async fn enrich(
                 out.members_only.push(v.id.clone());
             } else if went_public {
                 out.went_public.push(v.id.clone());
+            }
+            if tab == ChannelTab::Live {
+                mark_streamed(&mut *st.db.acquire().await?, v).await?;
             }
         }
         pending.retain(|id| !found.iter().any(|v| &v.id == id));
@@ -323,6 +393,27 @@ async fn enrich(
         .collect();
     feed::mark_enriched(st.db.pool(), &give_up).await?;
     Ok(out)
+}
+
+/// Look up when the channel's upcoming and live streams start, and whether they have
+/// ended. The channel page only has dates like "Scheduled for 11/8/26, 7:00 AM".
+async fn check_streams(st: &AppState, channel_id: &str) -> AppResult<()> {
+    for id in feed::streams(st.db.pool(), channel_id).await? {
+        let times = match st.yt.live_times(&id).await {
+            Ok(t) => t,
+            Err(e) => {
+                tracing::debug!(video = id, error = %e, "stream times unavailable");
+                continue;
+            }
+        };
+        let state = times.map(|t| LiveState {
+            upcoming: t.upcoming,
+            live_at: t.starts_at,
+            ended_at: t.ended_at,
+        });
+        feed::set_live(st.db.pool(), &id, state.as_ref()).await?;
+    }
+    Ok(())
 }
 
 /// Poll active channels often and dormant ones rarely, with jitter so

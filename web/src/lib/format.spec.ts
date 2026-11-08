@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { ago, compact, duration, watchedFraction } from './format.js';
+import { ago, compact, duration, streamTime, watchedFraction, when } from './format.js';
 import { locale } from './i18n/index.js';
+
+/** Plain spaces, whichever ones ICU uses. */
+const sp = (s: string | null) => s?.replace(/\s/g, ' ') ?? null;
 
 describe('format', () => {
 	it('durations', () => {
@@ -33,6 +36,38 @@ describe('format', () => {
 		} finally {
 			locale.set('en');
 		}
+	});
+
+	it('times near now, in local time', () => {
+		// Some ICU versions put a narrow no-break space before "PM".
+		const at = (d: number, h: number, min = 0) => new Date(2026, 10, d, h, min).getTime() / 1000;
+		const now = at(8, 9); // Sunday
+		expect(sp(when(at(8, 17), now))).toBe('today 5:00 PM');
+		expect(sp(when(at(8, 17), now, false))).toBe('5:00 PM');
+		expect(sp(when(at(9, 17), now))).toBe('tomorrow 5:00 PM');
+		expect(sp(when(at(7, 17), now))).toBe('yesterday 5:00 PM');
+		expect(sp(when(at(13, 17), now))).toBe('Fri 5:00 PM');
+		expect(sp(when(at(20, 17, 30), now))).toBe('Nov 20, 5:30 PM');
+	});
+
+	it('stream times', () => {
+		const now = new Date(2026, 10, 8, 9).getTime() / 1000;
+		const stream = (is_upcoming: boolean, is_live: boolean, start: number, end?: number) => ({
+			is_upcoming,
+			is_live,
+			live_at: now + start,
+			live_ended_at: end == null ? null : now + end
+		});
+		expect(sp(streamTime(stream(true, true, 25 * 60), now))).toBe('Starts in 25 minutes');
+		expect(sp(streamTime(stream(true, true, 8 * 3600), now))).toBe('Starts today 5:00 PM');
+		expect(sp(streamTime(stream(true, true, -120), now))).toBe('Starting soon');
+		expect(sp(streamTime(stream(false, true, -3600), now))).toBe('Live since 8:00 AM');
+		expect(sp(streamTime(stream(false, false, -7 * 3600, -6 * 3600), now))).toBe(
+			'Streamed 7 hours ago'
+		);
+		expect(
+			streamTime({ is_upcoming: false, is_live: false, live_at: null, live_ended_at: null }, now)
+		).toBe(null);
 	});
 
 	it('watched fraction', () => {

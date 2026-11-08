@@ -1765,6 +1765,16 @@ export interface components {
 			is_live: boolean;
 			is_short: boolean;
 			is_upcoming: boolean;
+			/**
+			 * Format: int64
+			 * @description Live streams: the scheduled start while upcoming, then when it went live.
+			 */
+			live_at?: number | null;
+			/**
+			 * Format: int64
+			 * @description Live streams that have ended: when.
+			 */
+			live_ended_at?: number | null;
 			/** @description Only for paying channel members, such as "Members first" uploads. */
 			members_only: boolean;
 			/**

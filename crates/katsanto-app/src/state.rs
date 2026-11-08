@@ -148,7 +148,20 @@ impl AppState {
     pub async fn channel(&self, channel_id: &str, tab: ChannelTab) -> AppResult<Arc<ChannelPage>> {
         let (yt, id) = (self.yt.clone(), channel_id.to_owned());
         cached(&self.channels, (id.clone(), tab), async move {
-            yt.channel(&id, tab).await
+            let mut page = yt.channel(&id, tab).await?;
+            // The page only has "Scheduled for 11/8/26, 7:00 AM", in Pacific time.
+            let upcoming = page
+                .videos
+                .items
+                .iter_mut()
+                .filter(|v| v.is_upcoming)
+                .take(5);
+            for v in upcoming {
+                if let Ok(Some(t)) = yt.live_times(&v.id).await {
+                    v.live_at = t.starts_at;
+                }
+            }
+            Ok(page)
         })
         .await
     }

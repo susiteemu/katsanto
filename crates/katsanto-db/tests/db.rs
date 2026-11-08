@@ -580,6 +580,7 @@ mod subscriptions_and_feed {
                 thumbnail_url: None,
                 is_short: false,
                 is_live: false,
+                is_upcoming: false,
                 members_only: false,
             },
         )
@@ -589,6 +590,84 @@ mod subscriptions_and_feed {
             .await
             .unwrap();
         assert!(feed::unenriched(db.pool(), "UC1").await.unwrap().is_empty());
+    }
+
+    #[tokio::test]
+    async fn streams_are_checked_until_they_end() {
+        let db = Db::in_memory().await.unwrap();
+        let u = user(&db, "u").await;
+        channel(&db, "UC1").await;
+        subscriptions::subscribe(db.pool(), u, "UC1").await.unwrap();
+        rss_video(&db, "s", "UC1", 100, false).await;
+        rss_video(&db, "n", "UC1", 90, false).await;
+        for (id, is_upcoming) in [("s", true), ("n", false)] {
+            feed::enrich(
+                &mut db.acquire().await.unwrap(),
+                &feed::Enrichment {
+                    id,
+                    duration_s: None,
+                    thumbnail_url: None,
+                    is_short: false,
+                    is_live: !is_upcoming,
+                    is_upcoming,
+                    members_only: false,
+                },
+            )
+            .await
+            .unwrap();
+        }
+        assert_eq!(feed::streams(db.pool(), "UC1").await.unwrap(), ["s", "n"]);
+        let row = |id: &'static str| {
+            let db = db.clone();
+            async move {
+                let q = feed::FeedQuery {
+                    include_live: true,
+                    limit: 10,
+                    ..Default::default()
+                };
+                feed::feed(db.pool(), u, &q)
+                    .await
+                    .unwrap()
+                    .into_iter()
+                    .find(|r| r.id == id)
+                    .unwrap()
+            }
+        };
+        let set = |id: &'static str, s: Option<feed::LiveState>| {
+            let db = db.clone();
+            async move { feed::set_live(db.pool(), id, s.as_ref()).await.unwrap() }
+        };
+
+        let state = |upcoming, live_at, ended_at| feed::LiveState {
+            upcoming,
+            live_at: Some(live_at),
+            ended_at,
+        };
+        set("s", Some(state(true, 5000, None))).await;
+        let r = row("s").await;
+        assert!(r.is_live && r.is_upcoming);
+        assert_eq!(r.live_at, Some(5000));
+
+        set("s", Some(state(false, 5100, None))).await;
+        let r = row("s").await;
+        assert!(r.is_live && !r.is_upcoming);
+        assert_eq!(r.live_at, Some(5100));
+
+        // Ended: a regular video, as long as the stream was.
+        set("s", Some(state(false, 5100, Some(8700)))).await;
+        let r = row("s").await;
+        assert!(!r.is_live && !r.is_upcoming);
+        assert_eq!((r.live_ended_at, r.duration_s), (Some(8700), Some(3600)));
+        // Estimates from the Live tab don't replace exact times.
+        feed::mark_streamed(db.pool(), "s", 5000, 9000)
+            .await
+            .unwrap();
+        assert_eq!(row("s").await.live_at, Some(5100));
+
+        // Not a stream after all.
+        set("n", None).await;
+        assert!(!row("n").await.is_live);
+        assert!(feed::streams(db.pool(), "UC1").await.unwrap().is_empty());
     }
 
     #[tokio::test]
@@ -606,6 +685,7 @@ mod subscriptions_and_feed {
             thumbnail_url: None,
             is_short: false,
             is_live: false,
+            is_upcoming: false,
             members_only,
         };
         let q = feed::FeedQuery {
@@ -674,6 +754,7 @@ mod subscriptions_and_feed {
                 thumbnail_url: None,
                 is_short: false,
                 is_live: false,
+                is_upcoming: false,
                 members_only: true,
             },
         )
@@ -750,6 +831,7 @@ mod feed_filters {
                     thumbnail_url: None,
                     is_short: short,
                     is_live: live,
+                    is_upcoming: false,
                     members_only: false,
                 },
             )

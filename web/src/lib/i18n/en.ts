@@ -100,6 +100,10 @@ export const en = {
 	video: {
 		live: 'LIVE',
 		upcoming: 'Upcoming',
+		starts: (when: string) => `Starts ${when}`,
+		startingSoon: 'Starting soon',
+		liveSince: (when: string) => `Live since ${when}`,
+		streamed: (ago: string) => `Streamed ${ago}`,
 		membersOnly: 'Members only',
 		watched: 'Watched',
 		percentWatched: (p: number) => `${p}% watched`,

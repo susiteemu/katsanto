@@ -177,6 +177,8 @@ fn parse_lockup(l: &Value, tab: ChannelTab) -> Option<VideoCard> {
         is_upcoming: badge_has("UPCOMING")
             || parts.iter().any(|(text, _)| text.starts_with("Scheduled")),
         members_only,
+        live_at: None,
+        live_ended_at: None,
     })
 }
 
@@ -200,6 +202,8 @@ fn parse_short(s: &Value) -> Option<VideoCard> {
         is_short: true,
         is_upcoming: false,
         members_only: false,
+        live_at: None,
+        live_ended_at: None,
     })
 }
 
