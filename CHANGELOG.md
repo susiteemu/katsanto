@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.6.0](https://github.com/susiteemu/katsanto/compare/v1.5.0...v1.6.0) (2026-11-09)
+
+
+### Features
+
+* show live stream times and play live streams ([#33](https://github.com/susiteemu/katsanto/issues/33)) ([b56ddc0](https://github.com/susiteemu/katsanto/commit/b56ddc0402f4a7eab0f36fcf871c6843318f6c1b))
+
 ## [1.5.0](https://github.com/susiteemu/katsanto/compare/v1.4.3...v1.5.0) (2026-11-09)
 
 
