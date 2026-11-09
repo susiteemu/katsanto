@@ -46,6 +46,9 @@ pub struct FeedRow {
     pub view_count: Option<i64>,
     pub is_short: bool,
     pub is_live: bool,
+    pub is_upcoming: bool,
+    pub live_at: Option<i64>,
+    pub live_ended_at: Option<i64>,
     pub channel_id: String,
     pub channel_name: String,
     pub channel_avatar_url: Option<String>,
@@ -59,8 +62,8 @@ pub struct FeedRow {
 pub async fn feed(e: impl Executor<'_>, user_id: i64, q: &FeedQuery) -> DbResult<Vec<FeedRow>> {
     let mut b: QueryBuilder<Sqlite> = QueryBuilder::new(
         "SELECT v.id, v.title, v.thumbnail_url, v.duration_s, v.published_at, v.view_count,
-                v.is_short, v.is_live, v.channel_id, c.name AS channel_name,
-                c.avatar_url AS channel_avatar_url, p.position_s,
+                v.is_short, v.is_live, v.is_upcoming, v.live_at, v.live_ended_at,
+                v.channel_id, c.name AS channel_name, c.avatar_url AS channel_avatar_url, p.position_s,
                 p.duration_s AS watched_duration_s, p.finished, p.updated_at AS progress_updated_at
          FROM videos v
          JOIN subscriptions s ON s.channel_id = v.channel_id AND s.user_id = ",
@@ -277,6 +280,14 @@ pub async fn upsert_from_rss(conn: &mut crate::Conn, v: &FeedVideoMeta<'_>) -> D
     Ok(!existed)
 }
 
+/// What a channel page says about a video, besides [`FeedVideoMeta`].
+pub struct PageFlags {
+    pub duration_s: Option<i64>,
+    pub is_live: bool,
+    pub is_upcoming: bool,
+    pub members_only: bool,
+}
+
 /// Store a video found on the channel page (when RSS is unavailable). Its publish
 /// time is an estimate, so an exact one already stored is kept; duration and type
 /// come along, so it needs no enrichment unless it's members-only, which is checked
@@ -284,15 +295,13 @@ pub async fn upsert_from_rss(conn: &mut crate::Conn, v: &FeedVideoMeta<'_>) -> D
 pub async fn upsert_from_page(
     conn: &mut crate::Conn,
     v: &FeedVideoMeta<'_>,
-    duration_s: Option<i64>,
-    is_live: bool,
-    members_only: bool,
+    f: &PageFlags,
 ) -> DbResult<bool> {
     let existed = crate::videos::exists(&mut *conn, v.id).await?;
     sqlx::query(
         "INSERT INTO videos (id, channel_id, title, thumbnail_url, published_at, view_count, is_short,
-                             is_live, duration_s, members_only, enriched, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOT ?, ?)
+                             is_live, is_upcoming, duration_s, members_only, enriched, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOT ?, ?)
          ON CONFLICT(id) DO UPDATE SET
            title = excluded.title,
            thumbnail_url = COALESCE(videos.thumbnail_url, excluded.thumbnail_url),
@@ -300,6 +309,7 @@ pub async fn upsert_from_page(
            view_count = COALESCE(excluded.view_count, videos.view_count),
            is_short = videos.is_short OR excluded.is_short,
            is_live = excluded.is_live,
+           is_upcoming = excluded.is_upcoming,
            duration_s = COALESCE(excluded.duration_s, videos.duration_s),
            members_only = videos.members_only OR excluded.members_only,
            enriched = NOT (videos.members_only OR excluded.members_only),
@@ -312,10 +322,11 @@ pub async fn upsert_from_page(
     .bind(v.published_at)
     .bind(v.view_count)
     .bind(v.is_short)
-    .bind(is_live)
-    .bind(duration_s)
-    .bind(members_only)
-    .bind(members_only)
+    .bind(f.is_live || f.is_upcoming)
+    .bind(f.is_upcoming)
+    .bind(f.duration_s)
+    .bind(f.members_only)
+    .bind(f.members_only)
     .bind(now())
     .execute(&mut *conn)
     .await?;
@@ -344,6 +355,7 @@ pub struct Enrichment<'a> {
     pub thumbnail_url: Option<&'a str>,
     pub is_short: bool,
     pub is_live: bool,
+    pub is_upcoming: bool,
     pub members_only: bool,
 }
 
@@ -366,13 +378,14 @@ pub async fn enrich(conn: &mut crate::Conn, v: &Enrichment<'_>) -> DbResult<bool
             > 0;
     sqlx::query(
         "UPDATE videos SET duration_s = COALESCE(?, duration_s), is_short = ?, is_live = ?,
-           thumbnail_url = COALESCE(?, thumbnail_url), members_only = ?, enriched = NOT ?,
-           updated_at = ?
+           is_upcoming = ?, thumbnail_url = COALESCE(?, thumbnail_url), members_only = ?,
+           enriched = NOT ?, updated_at = ?
          WHERE id = ?",
     )
     .bind(v.duration_s)
     .bind(v.is_short)
-    .bind(v.is_live)
+    .bind(v.is_live || v.is_upcoming)
+    .bind(v.is_upcoming)
     .bind(v.thumbnail_url)
     .bind(v.members_only)
     .bind(v.members_only)
@@ -397,5 +410,72 @@ pub async fn mark_enriched(e: impl Executor<'_>, ids: &[String]) -> DbResult<()>
     }
     sep.push_unseparated(")");
     q.build().execute(e).await?;
+    Ok(())
+}
+
+/// Streams looked up on each refresh of their channel until they have ended.
+const MAX_STREAMS: i64 = 10;
+
+/// The channel's upcoming and live streams, newest first.
+pub async fn streams(e: impl Executor<'_>, channel_id: &str) -> DbResult<Vec<String>> {
+    Ok(sqlx::query_scalar(
+        "SELECT id FROM videos WHERE channel_id = ? AND (is_live OR is_upcoming)
+         ORDER BY published_at DESC LIMIT ?",
+    )
+    .bind(channel_id)
+    .bind(MAX_STREAMS)
+    .fetch_all(e)
+    .await?)
+}
+
+/// A stream's state, from YouTube.
+pub struct LiveState {
+    pub upcoming: bool,
+    /// The scheduled start while upcoming, then the actual one.
+    pub live_at: Option<i64>,
+    pub ended_at: Option<i64>,
+}
+
+/// Store a stream's state; `None` when the video turned out not to be one. An ended
+/// stream is a regular video, with its length as the duration if none is known.
+pub async fn set_live(e: impl Executor<'_>, id: &str, s: Option<&LiveState>) -> DbResult<()> {
+    let (upcoming, live_at, ended_at) =
+        s.map_or((false, None, None), |s| (s.upcoming, s.live_at, s.ended_at));
+    let live = s.is_some() && ended_at.is_none();
+    sqlx::query(
+        "UPDATE videos SET is_upcoming = ?, is_live = ?, live_at = ?, live_ended_at = ?,
+           duration_s = COALESCE(duration_s, ? - ?), updated_at = ?
+         WHERE id = ?",
+    )
+    .bind(upcoming)
+    .bind(live)
+    .bind(live_at)
+    .bind(ended_at)
+    .bind(ended_at)
+    .bind(live_at)
+    .bind(now())
+    .bind(id)
+    .execute(e)
+    .await?;
+    Ok(())
+}
+
+/// An ended stream from the channel's Live tab, with times estimated from its date
+/// and length; exact ones already stored are kept.
+pub async fn mark_streamed(
+    e: impl Executor<'_>,
+    id: &str,
+    started_at: i64,
+    ended_at: i64,
+) -> DbResult<()> {
+    sqlx::query(
+        "UPDATE videos SET live_at = ?, live_ended_at = ?
+         WHERE id = ? AND live_at IS NULL AND NOT is_live AND NOT is_upcoming",
+    )
+    .bind(started_at)
+    .bind(ended_at)
+    .bind(id)
+    .execute(e)
+    .await?;
     Ok(())
 }

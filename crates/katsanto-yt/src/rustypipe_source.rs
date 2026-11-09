@@ -275,6 +275,13 @@ impl RustyPipeSource {
         Ok(page)
     }
 
+    pub async fn live_times(&self, video_id: &str) -> YtResult<Option<LiveTimes>> {
+        let raw = self
+            .raw("player", &serde_json::json!({ "videoId": video_id }))
+            .await?;
+        Ok(crate::live::parse_live_times(&raw))
+    }
+
     async fn browse(&self, body: &serde_json::Value) -> YtResult<serde_json::Value> {
         self.raw("browse", body).await
     }
@@ -353,6 +360,8 @@ fn video_card(v: VideoItem) -> VideoCard {
         is_upcoming: v.is_upcoming,
         // rustypipe doesn't parse the badge.
         members_only: false,
+        live_at: None,
+        live_ended_at: None,
     }
 }
 

@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::{IntoParams, ToSchema};
 use utoipa_axum::{router::OpenApiRouter, routes};
 
-use super::proxy::{image_url, is_video_id, stream_url};
+use super::proxy::{image_url, is_video_id, live_manifest_url, stream_url};
 use crate::{
     error::{AppError, AppResult, ErrorBody},
     state::{AppState, SearchKey},
@@ -114,6 +114,8 @@ async fn resolve(
 pub struct VideoResponse {
     details: VideoDetails,
     manifest_url: String,
+    /// HLS playlist of a live stream, which the DASH manifest can't describe.
+    live_manifest_url: Option<String>,
     streams: Vec<Stream>,
     captions: Vec<CaptionTrack>,
 }
@@ -163,6 +165,8 @@ async fn video(
         .collect();
     Ok(Json(VideoResponse {
         manifest_url: format!("/api/v1/videos/{id}/manifest.mpd"),
+        live_manifest_url: (details.is_live && pb.hls_manifest_url.is_some())
+            .then(|| live_manifest_url(&id)),
         details,
         streams: pb.streams.clone(),
         captions,

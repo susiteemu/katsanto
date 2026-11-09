@@ -2,7 +2,7 @@
 	import type { Snippet } from 'svelte';
 	import { m } from '#lib/i18n/index.js';
 	import type { Schemas } from '#lib/api/client.js';
-	import { ago, compact, duration, watchedFraction } from '#lib/format.js';
+	import { ago, compact, duration, streamTime, watchedFraction } from '#lib/format.js';
 	import { api, errorMessage, unwrap } from '#lib/api/client.js';
 	import type { Progress } from '#lib/progress.js';
 	import { saveToList } from '#lib/saveToList.svelte.js';
@@ -99,7 +99,7 @@
 			showViews && show.views && video.view_count != null
 				? m.common.views(compact(video.view_count))
 				: null,
-			show.dates ? (video.published_text ?? ago(video.published_at)) : null
+			show.dates ? (streamTime(video) ?? video.published_text ?? ago(video.published_at)) : null
 		]
 			.filter(Boolean)
 			.join(' · ')
@@ -126,15 +126,15 @@
 				class="size-full object-cover transition duration-300 group-hover:scale-[1.03]"
 			/>
 		{/if}
-		{#if video.is_live}
-			<span
-				class="absolute right-1.5 bottom-1.5 rounded bg-danger px-1.5 py-0.5 text-xs font-medium text-danger-fg"
-				>{m.video.live}</span
-			>
-		{:else if video.is_upcoming}
+		{#if video.is_upcoming}
 			<span
 				class="absolute right-1.5 bottom-1.5 rounded bg-black/80 px-1.5 py-0.5 text-xs text-white"
 				>{m.video.upcoming}</span
+			>
+		{:else if video.is_live}
+			<span
+				class="absolute right-1.5 bottom-1.5 rounded bg-danger px-1.5 py-0.5 text-xs font-medium text-danger-fg"
+				>{m.video.live}</span
 			>
 		{:else if video.duration_s && show.durations}
 			<span

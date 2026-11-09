@@ -1,8 +1,8 @@
 use async_trait::async_trait;
 
 use crate::model::{
-    ChannelFeed, ChannelPage, ChannelTab, Playback, ResolvedUrl, SearchPage, SearchParams,
-    VideoInfo, VideoPage,
+    ChannelFeed, ChannelPage, ChannelTab, LiveTimes, Playback, ResolvedUrl, SearchPage,
+    SearchParams, VideoInfo, VideoPage,
 };
 
 #[derive(Debug, thiserror::Error)]
@@ -46,6 +46,11 @@ pub trait YoutubeSource: Send + Sync + 'static {
 
     /// The channel's RSS feed (latest uploads), for polling subscriptions.
     async fn channel_feed(&self, channel_id: &str) -> YtResult<ChannelFeed>;
+
+    /// When a live stream or premiere starts and ends; `None` for other videos.
+    async fn live_times(&self, _video_id: &str) -> YtResult<Option<LiveTimes>> {
+        Ok(None)
+    }
 
     /// Forget the current YouTube session so the next playback request starts a
     /// new one. Called when stream URLs are rejected despite being fresh.

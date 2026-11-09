@@ -5,8 +5,8 @@ use futures_util::FutureExt;
 
 use crate::{
     model::{
-        ChannelFeed, ChannelPage, ChannelTab, Playback, ResolvedUrl, SearchPage, SearchParams,
-        VideoInfo, VideoPage,
+        ChannelFeed, ChannelPage, ChannelTab, LiveTimes, Playback, ResolvedUrl, SearchPage,
+        SearchParams, VideoInfo, VideoPage,
     },
     player::PlayerClient,
     rss,
@@ -99,6 +99,10 @@ impl YoutubeSource for YoutubeClient {
 
     async fn channel_more(&self, cursor: &str) -> YtResult<VideoPage> {
         guarded(self.meta.channel_more(cursor)).await
+    }
+
+    async fn live_times(&self, video_id: &str) -> YtResult<Option<LiveTimes>> {
+        guarded(self.meta.live_times(video_id)).await
     }
 
     async fn channel_feed(&self, channel_id: &str) -> YtResult<ChannelFeed> {

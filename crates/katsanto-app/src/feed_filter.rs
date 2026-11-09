@@ -274,8 +274,10 @@ fn feed_item(r: FeedRow) -> FeedItem {
         view_count: r.view_count.map(|n| n as u64),
         is_live: r.is_live,
         is_short: r.is_short,
-        is_upcoming: false,
+        is_upcoming: r.is_upcoming,
         members_only: false,
+        live_at: r.live_at,
+        live_ended_at: r.live_ended_at,
     };
     proxy_card_images(&mut video);
     FeedItem { video, progress }

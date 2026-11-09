@@ -199,7 +199,12 @@ impl PlayerClient {
             return Err(YtError::Unavailable("no playable formats".into()));
         }
 
-        let mut n: Vec<String> = formats.iter().filter_map(|(_, _, u)| u.n.clone()).collect();
+        let hls = streaming.hls_manifest_url.as_deref();
+        let mut n: Vec<String> = formats
+            .iter()
+            .filter_map(|(_, _, u)| u.n.clone())
+            .chain(hls.and_then(|u| path_param(u, "n")).map(str::to_owned))
+            .collect();
         let mut sig: Vec<String> = formats
             .iter()
             .filter_map(|(_, _, u)| u.sig.clone())
@@ -264,7 +269,7 @@ impl PlayerClient {
                     url: t.base_url,
                 })
                 .collect(),
-            hls_manifest_url: streaming.hls_manifest_url,
+            hls_manifest_url: hls.map(|u| finish_hls(u, &solved, &session.po_token)),
             valid_until: now + expires_in,
             user_agent: USER_AGENT.to_owned(),
         })
@@ -800,8 +805,44 @@ impl Text {
     }
 }
 
+/// A parameter of a path-style URL (`…/key/value/…`), as used by HLS manifests.
+fn path_param<'a>(url: &'a str, key: &str) -> Option<&'a str> {
+    let mut parts = url.split('/');
+    parts.by_ref().find(|p| *p == key)?;
+    parts.next()
+}
+
+/// A live stream's HLS manifest URL, ready for use. Its segments need the same as
+/// stream URLs: the solved `n` and the PO token. Both go into the manifest URL's path,
+/// and the playlists pass them on to every segment.
+fn finish_hls(url: &str, solved: &crate::solver::Solutions, po_token: &str) -> String {
+    let mut url = url.trim_end_matches('/').to_owned();
+    if let Some(raw) = path_param(&url, "n")
+        && let Some(n) = solved.n.get(raw)
+    {
+        url = url.replacen(&format!("/n/{raw}"), &format!("/n/{n}"), 1);
+    }
+    format!("{url}/pot/{po_token}")
+}
+
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn hls_manifest_gets_solved_n_and_po_token() {
+        let solved = crate::solver::Solutions {
+            n: [("raw".to_owned(), "solved".to_owned())].into(),
+            sig: Default::default(),
+        };
+        let url =
+            "https://manifest.googlevideo.com/api/manifest/hls_variant/expire/1/n/raw/sparams/x/";
+        assert_eq!(path_param(url, "n"), Some("raw"));
+        assert_eq!(
+            finish_hls(url, &solved, "TOKEN"),
+            "https://manifest.googlevideo.com/api/manifest/hls_variant/expire/1/n/solved/sparams/x/pot/TOKEN"
+        );
+        assert_eq!(path_param("https://x/a/1", "n"), None);
+    }
+
     use super::*;
     use crate::solver::Solutions;
 

@@ -88,6 +88,8 @@ impl YoutubeSource for FakeYoutube {
             is_short: short,
             is_upcoming: false,
             members_only: false,
+            live_at: None,
+            live_ended_at: None,
         };
         let items = match tab {
             ChannelTab::Videos if id == NO_RSS_CHANNEL => {

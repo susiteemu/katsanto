@@ -214,7 +214,8 @@
 				<Player
 					bind:this={player}
 					videoId={id}
-					src={video.manifest_url}
+					src={video.live_manifest_url ?? video.manifest_url}
+					live={!!video.live_manifest_url}
 					title={video.details.title}
 					channel={video.details.channel.name}
 					poster={video.details.thumbnail_url}

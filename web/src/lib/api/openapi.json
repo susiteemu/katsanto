@@ -5165,6 +5165,22 @@
           "is_upcoming": {
             "type": "boolean"
           },
+          "live_at": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Live streams: the scheduled start while upcoming, then when it went live."
+          },
+          "live_ended_at": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Live streams that have ended: when."
+          },
           "members_only": {
             "type": "boolean",
             "description": "Only for paying channel members, such as \"Members first\" uploads."
@@ -5362,6 +5378,13 @@
           },
           "details": {
             "$ref": "#/components/schemas/VideoDetails"
+          },
+          "live_manifest_url": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "HLS playlist of a live stream, which the DASH manifest can't describe."
           },
           "manifest_url": {
             "type": "string"
