@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.5.0](https://github.com/susiteemu/katsanto/compare/v1.4.3...v1.5.0) (2026-11-09)
+
+
+### Features
+
+* omit log timestamps when running under systemd ([17ce44a](https://github.com/susiteemu/katsanto/commit/17ce44a95fd0694795fa4addec155c92a1108d57))
+* omit log timestamps when running under systemd ([d4c2f7d](https://github.com/susiteemu/katsanto/commit/d4c2f7db47f166f83a90ebe34bc897ccf75dc881))
+
 ## [1.4.3](https://github.com/susiteemu/katsanto/compare/v1.4.2...v1.4.3) (2026-11-03)
 
 
