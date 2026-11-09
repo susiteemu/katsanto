@@ -13,12 +13,17 @@ async fn main() {
         return;
     }
 
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| EnvFilter::new("info,tower_http=info")),
-        )
-        .init();
+    let filter = EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| EnvFilter::new("info,tower_http=info"));
+    // Under systemd, stderr goes to the journal, which stamps every line itself.
+    if std::env::var_os("JOURNAL_STREAM").is_some() {
+        tracing_subscriber::fmt()
+            .with_env_filter(filter)
+            .without_time()
+            .init();
+    } else {
+        tracing_subscriber::fmt().with_env_filter(filter).init();
+    }
 
     let config = match Config::load() {
         Ok(c) => c,
