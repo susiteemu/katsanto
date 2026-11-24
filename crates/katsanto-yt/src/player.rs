@@ -395,7 +395,11 @@ impl PlayerClient {
         if let Some(p) = cache.load() {
             return Ok(p);
         }
-        let url = format!("https://www.youtube.com/s/player/{id}/player_ias.vflset/en_US/base.js");
+        // The TV variant matches our TVHTML5 client. The main (web) variant of
+        // newer players breaks ejs preprocessing ("not a function"), see
+        // yt-dlp/ejs#79; yt-dlp switched to the TV variant for the same reason.
+        let url =
+            format!("https://www.youtube.com/s/player/{id}/tv-player-ias.vflset/tv-player-ias.js");
         let player_js = self
             .http
             .get(&url)
