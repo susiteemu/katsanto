@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.6.1](https://github.com/susiteemu/katsanto/compare/v1.6.0...v1.6.1) (2026-11-24)
+
+
+### Bug Fixes
+
+* use TV player.js variant for n/sig solving ([db8f227](https://github.com/susiteemu/katsanto/commit/db8f2271b3e73feebb1aad811854becc450bfcdd))
+* use TV player.js variant for n/sig solving ([f40a398](https://github.com/susiteemu/katsanto/commit/f40a39807c1585d0213c6a33a9aa42d7ab92780d))
+
 ## [1.6.0](https://github.com/susiteemu/katsanto/compare/v1.5.0...v1.6.0) (2026-11-09)
 
 
